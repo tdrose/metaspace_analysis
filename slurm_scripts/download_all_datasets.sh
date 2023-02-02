@@ -4,9 +4,9 @@
 #SBATCH -N 1                        # number of nodes
 #SBATCH -n 1                        # number of cores
 #SBATCH --mem 30G                    # memory pool for all cores
-#SBATCH -t 0-10:00:00                   # runtime limit (D-HH:MM:SS)
-#SBATCH -o slurm.%N.%j.out          # STDOUT
-#SBATCH -e slurm.%N.%j.err          # STDERR
+#SBATCH -t 0-11:00:00                   # runtime limit (D-HH:MM:SS)
+#SBATCH -o slurm.%j.out          # STDOUT
+#SBATCH -e slurm.%j.err          # STDERR
 #SBATCH --mail-type=END,FAIL        # notifications for job done & fail
 #SBATCH --mail-user=tim.rose@embl.de # send-to address
 

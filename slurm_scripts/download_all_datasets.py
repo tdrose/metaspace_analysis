@@ -44,7 +44,7 @@ for ds in dss:
             
             if tmp_tab.size > 0:
                 if ds.id not in all_results_dict.keys():
-                    all_results_dict[ds.id] = tmp_tab[['ionFormula', 'ion', 'fdr', 'mz', 'offSample', 'moleculeNames', 'intensity']]
+                    all_results_dict[ds.id] = tmp_tab[['ionFormula', 'ion', 'fdr', 'mz', 'offSample', 'moleculeNames', 'intensity', 'moleculeIds']]
                     counter +=1
             print(counter)
 

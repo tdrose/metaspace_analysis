@@ -1,3 +1,4 @@
 .ipynb_checkpoints/
 *.out
 *.err
+__pycache__/*
