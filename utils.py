@@ -98,7 +98,23 @@ def clean_metadata_table(mdt):
         'α-Cyano-4-hydroxycinnamic acid (HCCA)': 'HCCA',
         '2,5-dihydroxyacetophenone (DHAP)': 'DHAP',
         'trans-2-[3-(4-tert-Butylphenyl)-2-methyl-2-propenylidene] malononitrile (DCTB)': 'DCTB',
-        '2,5-dihydroxy benzoic acid (DHB)': 'DHB'
+        '2,5-dihydroxy benzoic acid (DHB)': 'DHB',
+        '2,4,6-Trihydroxyacetophenone (THAP)': 'THAP',
+        '1,5-diaminonaphthalene (DAN) | DHB': 'DAN, DHB',
+        '1,5-diaminonaphthalene (DAN)+HCl': 'DAN, HCl',
+        '1,5-diaminonaphthalene (DAN), DHB': 'DAN, DHB',
+        '2-Mercaptobenzothiazole (MBT)': 'MBT',
+        '2,5-dihydroxyacetophenone (DHAP)/Gold Sputter': 'DHAP, Au',
+        '2-Mercaptobenzothiazole (MBT)': 'MBT',
+        '2′,6′-Dihydroxyacetophenone (DHAP)': 'DHAP',
+        '5-chloro-2-Mercaptobenzothiazole (CMBT)': 'CMBT',
+        '2,5-dihydroxybenzoic acid (DHB)/Fe3O4 binary mix': 'DHB, Fe3O4',
+        'DHB and DAN': 'DAN, DHB',
+        'DHB, CHCA': 'DHB, CHCA',
+        'DHB/CHCA': 'DHB, CHCA',
+        'DHB/Fe3O4': 'DHB, Fe3O4',
+        'norharmane': 'Norharmane',
+        'norhramne': 'Norharmane'
     })
     
     return out
@@ -106,3 +122,13 @@ def clean_metadata_table(mdt):
 
 def flatten(l):
     return [item for sublist in l for item in sublist]
+
+def top_feature_col(in_col: pd.Series, top: int=20, other_key: str='Other'):
+    tmp = pd.value_counts(in_col)
+    replace_dict = {}
+    for i in range(len(tmp)):
+        if i < top:
+            replace_dict[tmp.index[i]] = tmp.index[i]
+        else:
+            replace_dict[tmp.index[i]] = other_key
+    return in_col.replace(to_replace=replace_dict)
