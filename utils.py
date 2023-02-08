@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 
@@ -132,3 +133,23 @@ def top_feature_col(in_col: pd.Series, top: int=20, other_key: str='Other'):
         else:
             replace_dict[tmp.index[i]] = other_key
     return in_col.replace(to_replace=replace_dict)
+
+
+def plot_cluster_metadata(adata, cluster='0', figsize=(9,8)):
+    
+    fig, ((ax1, ax2, ax3), (ax4, ax5, ax6)) =  plt.subplots(ncols=3, nrows=2, figsize=figsize)
+    
+    cols = ['top_Polarity', 'top_maldi_matrix', 'top_Group', 
+                             'top_Organism', 'top_Organism_Part']
+    
+    color = adata.uns['leiden_colors'][int(cluster)]
+    
+    adata.obs[adata.obs['leiden']==cluster][cols].groupby('top_maldi_matrix')['top_maldi_matrix'].count().plot(kind='bar', stacked=True, ax=ax1, color=color)
+    adata.obs[adata.obs['leiden']==cluster][cols].groupby('top_Polarity')['top_Polarity'].count().plot(kind='bar', stacked=True, ax=ax2, color=color)
+    adata.obs[adata.obs['leiden']==cluster][cols].groupby('top_Group')['top_Group'].count().plot(kind='bar', stacked=True, ax=ax3, color=color)
+    adata.obs[adata.obs['leiden']==cluster][cols].groupby('top_Organism')['top_Organism'].count().plot(kind='bar', stacked=True, ax=ax4, color=color)
+    adata.obs[adata.obs['leiden']==cluster][cols].groupby('top_Organism_Part')['top_Organism_Part'].count().plot(kind='bar', stacked=True, ax=ax5, color=color)
+    
+    plt.show()
+    
+    
