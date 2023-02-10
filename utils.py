@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
+from anndata import AnnData
 
 
 
@@ -153,3 +155,52 @@ def plot_cluster_metadata(adata, cluster='0', figsize=(9,8)):
     plt.show()
     
     
+def make_ion_anndata(results, mdt, fdr_cutoff=0.5):
+    
+    features = []
+    for tab in tqdm(results.values()):
+        tmp_tab = tab[tab['fdr'] <= fdr_cutoff]
+        for ix in tmp_tab['ion']:
+                features.append(ix)
+    features = list(set(features))
+    
+    print(len(features), ' features')
+    
+    fdr_data = pd.DataFrame(0, columns=list(set(features)), index=results.keys(), dtype='float64')
+    
+    for i in tqdm(results.keys()):
+    # It is late, I lost my creativity for variable names
+        tmp_tab = results[i][results[i]['fdr'] <= fdr_cutoff]
+
+        ttt = tmp_tab.reset_index()[['ion', 'intensity']]
+        ttt2 = ttt.groupby('ion').sum()
+
+        fdr_data.loc[i, ttt2.index] = ttt2['intensity'].values
+        
+    return AnnData(X=fdr_data.to_numpy(), var=pd.DataFrame(features), obs=mdt.loc[fdr_data.index, :])
+
+
+def make_molecule_anndata(results, mdt, fdr_cutoff=0.5):
+    
+    mol_features = []
+    for tab in tqdm(results.values()):
+        tmp_tab = tab[tab['fdr'] <= fdr_cutoff]
+        for ix in tmp_tab.reset_index()['formula']:
+                mol_features.append(ix)
+    mol_features = list(set(mol_features))
+    
+    print(len(mol_features), ' features')
+    
+    mol_data = pd.DataFrame(0, columns=list(set(mol_features)), index=results.keys(), dtype='float64')
+    
+    # Fill dataframe
+    for i in tqdm(results.keys()):
+        # It is late, I lost my creativity for variable names
+        tmp_tab = results[i][results[i]['fdr'] <= fdr_cutoff]
+
+        ttt = tmp_tab.reset_index()[['formula', 'intensity']]
+        ttt2 = ttt.groupby('formula').sum()
+
+        mol_data.loc[i, ttt2.index] = ttt2['intensity'].values
+        
+    return AnnData(X=mol_data.to_numpy(), var=pd.DataFrame(mol_features), obs=mdt.loc[mol_data.index, :])
