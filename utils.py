@@ -155,11 +155,15 @@ def plot_cluster_metadata(adata, cluster='0', figsize=(9,8)):
     plt.show()
     
     
-def make_ion_anndata(results, mdt, fdr_cutoff=0.5):
+def make_ion_anndata(results, mdt, fdr_cutoff=0.5, only_onSample=False):
     
     features = []
     for tab in tqdm(results.values()):
         tmp_tab = tab[tab['fdr'] <= fdr_cutoff]
+        
+        if only_onSample:
+            tmp_tab = tmp_tab[tmp_tab['offSample'] == False]
+        
         for ix in tmp_tab['ion']:
                 features.append(ix)
     features = list(set(features))
@@ -170,7 +174,10 @@ def make_ion_anndata(results, mdt, fdr_cutoff=0.5):
     
     for i in tqdm(results.keys()):
     # It is late, I lost my creativity for variable names
-        tmp_tab = results[i][results[i]['fdr'] <= fdr_cutoff]
+        tmp_tab = results[i][results[i]['fdr'] <= fdr_cutoff
+                            ]
+        if only_onSample:
+            tmp_tab = tmp_tab[tmp_tab['offSample'] == False]
 
         ttt = tmp_tab.reset_index()[['ion', 'intensity']]
         ttt2 = ttt.groupby('ion').sum()
@@ -180,11 +187,15 @@ def make_ion_anndata(results, mdt, fdr_cutoff=0.5):
     return AnnData(X=fdr_data.to_numpy(), var=pd.DataFrame(features), obs=mdt.loc[fdr_data.index, :])
 
 
-def make_molecule_anndata(results, mdt, fdr_cutoff=0.5):
+def make_molecule_anndata(results, mdt, fdr_cutoff=0.5, only_onSample=False):
     
     mol_features = []
     for tab in tqdm(results.values()):
         tmp_tab = tab[tab['fdr'] <= fdr_cutoff]
+        
+        if only_onSample:
+            tmp_tab = tmp_tab[tmp_tab['offSample'] == False]
+        
         for ix in tmp_tab.reset_index()['formula']:
                 mol_features.append(ix)
     mol_features = list(set(mol_features))
@@ -197,6 +208,9 @@ def make_molecule_anndata(results, mdt, fdr_cutoff=0.5):
     for i in tqdm(results.keys()):
         # It is late, I lost my creativity for variable names
         tmp_tab = results[i][results[i]['fdr'] <= fdr_cutoff]
+        
+        if only_onSample:
+            tmp_tab = tmp_tab[tmp_tab['offSample'] == False]
 
         ttt = tmp_tab.reset_index()[['formula', 'intensity']]
         ttt2 = ttt.groupby('formula').sum()
@@ -204,3 +218,14 @@ def make_molecule_anndata(results, mdt, fdr_cutoff=0.5):
         mol_data.loc[i, ttt2.index] = ttt2['intensity'].values
         
     return AnnData(X=mol_data.to_numpy(), var=pd.DataFrame(mol_features), obs=mdt.loc[mol_data.index, :])
+
+
+
+def get_hmdb_names(db_tab: pd.DataFrame, formula: str):
+    tmp = db_tab.loc[formula, 'name']
+    if type(tmp) == str:
+        return [tmp]
+    else:
+        return list(tmp)
+    
+    return names
