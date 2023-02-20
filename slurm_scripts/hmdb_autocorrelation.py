@@ -37,32 +37,51 @@ sc.pp.normalize_total(adata_mol, target_sum=1e4)
 out_dict = {}
 
 sm = SMInstance()
-counter = 0
 
+counter = 4001
+
+out_dict = pickle.load(open(os.path.join('/scratch/trose/tmp', str(4000) + '_' + filename), "rb" ))
 
 # Loop over all remaining datasets after filtering
 for ds_id in adata_mol.obs.index:
     
-    ds = sm.dataset(id=ds_id)
+    if ds_id not in out_dict.keys():
+        
+        print(ds_id)
+        ds = sm.dataset(id=ds_id)
+        
+        try:
+
+            tmp_adata = dataset_to_anndata(ds, fdr=0.1, database=database)
+            
+            sq.gr.spatial_neighbors(tmp_adata, coord_type='grid')
+            tmp_adata.obsp['connectivities'] = tmp_adata.obsp['spatial_connectivities']
+
+            out_dict[ds_id] = {
+                'xdim': max(tmp_adata.obs['x']) + 1,
+                'ydim': max(tmp_adata.obs['y']) + 1,
+                'nfeatures': len(tmp_adata.var.index),
+                'autocorrelation': {k: v for v, k in zip(sc.metrics.morans_i(tmp_adata), tmp_adata.var.index)}
+            }
+            
+            counter += 1
+
+            if (counter % 50) == 0:
+                        pickle.dump(out_dict, 
+                    open( os.path.join('/scratch/trose/tmp', str(counter) + '_' + filename), "wb" ) )
+                
+        except:
+            print('skipping')
+            continue
+
+        
+
+        
+
+        
     
-    tmp_adata = dataset_to_anndata(ds, fdr=0.5, database=database)
-    
-    sq.gr.spatial_neighbors(tmp_adata, coord_type='grid')
-    tmp_adata.obsp['connectivities'] = tmp_adata.obsp['spatial_connectivities']
-    
-    out_dict[ds_id] = {
-        'xdim': max(tmp_adata.obs['x']) + 1,
-        'ydim': max(tmp_adata.obs['y']) + 1,
-        'nfeatures': len(tmp_adata.var.index),
-        'autocorrelation': {k: v for v, k in zip(sc.metrics.morans_i(tmp_adata), tmp_adata.var.index)}
-    }
-    
-    if (counter % 100) == 0:
-                pickle.dump(out_dict, 
-            open( os.path.join('/scratch/trose/tmp', str(counter) + '_' + filename), "wb" ) )
-    
-    counter += 1
-    
+        print(counter)
+        
 pickle.dump(out_dict, 
             open( os.path.join(store_dir, filename), "wb" ) )
     

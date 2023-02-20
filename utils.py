@@ -229,3 +229,57 @@ def get_hmdb_names(db_tab: pd.DataFrame, formula: str):
         return list(tmp)
     
     return names
+
+
+def top_annotations(tup, db, top=10, n=4, is_ion=False):
+    for i in range(top):
+        mol = tup[i][0]
+        if is_ion:
+            mol = mol.split('+')[0].split('-')[0]
+        if mol in db.index:
+            print(mol, ' - ', str(get_hmdb_names(db, mol)[:n]))
+        else:
+            print(mol)
+
+            
+def get_sig_molecules(adata, rg='ranked_genes', max_mols=None):
+    
+    pvals = [x < 0.05 for x,y in adata.uns[rg]['pvals_adj']]
+    
+    names = np.array([x for x,y in adata.uns[rg]['names']])
+    
+    if max_mols is None:
+        return names[pvals]
+    else:
+        return names[pvals][:max_mols]
+    
+def identifications(adata, sig_molecules, obsv):
+    sub = adata[:, sig_molecules]
+    
+    l1 = []
+    l2 = []
+    l3 = []
+    l4 = []
+    
+    # Loop over molecules
+    for mol in sig_molecules:
+        
+        data_vec = sub[:, mol].X.transpose()[0]
+        #print(data_vec.shape)
+        
+        # Loop over categories
+        for cat in sub.obs[obsv].cat.categories:
+            #print(sub.obs.shape)
+            tmp = data_vec[sub.obs[obsv]==cat]
+            zeros = sum(tmp==0)
+            nonzeros = sum(tmp!=0)
+            
+            l1.append(mol)
+            l2.append(cat)
+            l3.append(zeros)
+            l4.append(nonzeros)
+            
+    ratios = pd.DataFrame({'mol': l1, 'category': l2, 'zeros': l3, 'nonzeros': l4})
+    ratios['ratio'] = ratios['nonzeros'] / ratios['zeros']
+            
+    return ratios
