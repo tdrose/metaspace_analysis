@@ -11,16 +11,17 @@ poplar,Poplar
 plant,Plant
 homo sapiens (human) ,Human
 Candida albicans | Escherichia coli ,Multiple
-Non-human primate ,Primate
-Non-human primate (rhesus macaque) ,Primate
-Pseudomonas putida | Pseudomonas savastanoi ,Multiple
-homo sapiens (human) ,Human
-Candida albicans | Escherichia coli ,Multiple
+Non-human primate,Primate
+Non-human primate (rhesus macaque),Primate
+Pseudomonas putida | Pseudomonas savastanoi,Multiple
+Homo sapiens (human),Human
+Candida albicans | Escherichia coli,Multiple
 mixed,Multiple
 Homo sapiens (human),Human
 Mus musculus (mouse),Mouse
 Rattus norvegicus (rat),Rat
 Brassica napus (rapeseed),Rapeseed
-Mouse,Mouse
+mouse,Mouse
 none,Other
 Danio rerio (zebrafish),Zebrafish
+Pseudomonas putida | Pseudomonas savastanoi,Multiple
