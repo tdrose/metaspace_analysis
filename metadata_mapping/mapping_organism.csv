@@ -1,8 +1,19 @@
 Old,New
-homospaiens,homo sapiens (human)
-mouse,mus musculus (mouse)
-human,homo sapiens (human)
-none,NA
+homospaiens,Human
+Mouse,Mouse
+human,Human
+None,NA
 n/a,NA
-rat,rattus norvegicus (rat)
-mice,mus musculus (mouse)
+rat,Rat
+mice,Mouse
+Homo sapiens (human) | Mus musculus (mouse),Multiple
+poplar,Poplar
+plant,Plant
+homo sapiens (human) ,Human
+Candida albicans | Escherichia coli ,Multiple
+Non-human primate ,Primate
+Non-human primate (rhesus macaque) ,Primate
+Pseudomonas putida | Pseudomonas savastanoi ,Multiple
+homo sapiens (human) ,Human
+Candida albicans | Escherichia coli ,Multiple
+mixed,Multiple
