@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from anndata import AnnData
+import os
 
 
 
@@ -16,17 +17,21 @@ def make_metadata_dict(dss, results_dict, only_results=False):
                      'maldi_matrix': {},
                      'Group': {},
                      'mzmin': {},
-                     'mzmax': {}
+                     'mzmax': {},
+                     'Analyzer': {},
+                     'Ionisation_Source': {}
                     }
     
     for d in dss:
         if only_results:
             if d.id in results_dict.keys():
-                metadata_dict['Organism'][d.id] = d.metadata['Sample_Information']['Organism'].strip().lower()
-                metadata_dict['Condition'][d.id] = d.metadata['Sample_Information']['Condition'].strip().lower()
-                metadata_dict['Organism_Part'][d.id] = d.metadata['Sample_Information']['Organism_Part'].strip().lower()
-                metadata_dict['Polarity'][d.id] = d.metadata['MS_Analysis']['Polarity'].strip().lower()
-                metadata_dict['maldi_matrix'][d.id] = d.metadata['Sample_Preparation']['MALDI_Matrix']
+                metadata_dict['Organism'][d.id] = d.metadata['Sample_Information']['Organism'].strip()
+                metadata_dict['Condition'][d.id] = d.metadata['Sample_Information']['Condition'].strip()
+                metadata_dict['Organism_Part'][d.id] = d.metadata['Sample_Information']['Organism_Part'].strip()
+                metadata_dict['Polarity'][d.id] = d.metadata['MS_Analysis']['Polarity'].strip()
+                metadata_dict['Analyzer'][d.id] = d.metadata['MS_Analysis']['Analyzer'].strip()
+                metadata_dict['Ionisation_Source'][d.id] = d.metadata['MS_Analysis']['Ionisation_Source'].strip()
+                metadata_dict['maldi_matrix'][d.id] = d.metadata['Sample_Preparation']['MALDI_Matrix'].strip()
 
                 if d.group is None:
                     metadata_dict['Group'][d.id] = "not available"
@@ -37,10 +42,10 @@ def make_metadata_dict(dss, results_dict, only_results=False):
                 metadata_dict['mzmax'][d.id] = results_dict[d.id]['mz'].max()
                 
         else:
-            metadata_dict['Organism'][d.id] = d.metadata['Sample_Information']['Organism'].strip().lower()
-            metadata_dict['Condition'][d.id] = d.metadata['Sample_Information']['Condition'].strip().lower()
-            metadata_dict['Organism_Part'][d.id] = d.metadata['Sample_Information']['Organism_Part'].strip().lower()
-            metadata_dict['Polarity'][d.id] = d.metadata['MS_Analysis']['Polarity'].strip().lower()
+            metadata_dict['Organism'][d.id] = d.metadata['Sample_Information']['Organism'].strip()
+            metadata_dict['Condition'][d.id] = d.metadata['Sample_Information']['Condition'].strip()
+            metadata_dict['Organism_Part'][d.id] = d.metadata['Sample_Information']['Organism_Part'].strip()
+            metadata_dict['Polarity'][d.id] = d.metadata['MS_Analysis']['Polarity'].strip()
             metadata_dict['maldi_matrix'][d.id] = d.metadata['Sample_Preparation']['MALDI_Matrix']
 
             if d.group is None:
@@ -66,59 +71,20 @@ def metadata_dict_totable(md):
         
     return pd.DataFrame(convert_dict)
 
+def md_mapping_dict(path, file):
+    df = pd.read_csv(os.path.join(path, file), na_filter = False)
+    return dict(zip(df['Old'], df['New']))
 
-def clean_metadata_table(mdt):
+
+def clean_metadata_table(mdt, path='./metadata_mapping/'):
     
     out = mdt.copy()
     
-    out['Organism'] = out['Organism'].replace({
-        'homospaiens': 'homo sapiens (human)',
-        'mouse': 'mus musculus (mouse)',
-        'human': 'homo sapiens (human)',
-        'none': 'NA',
-        'n/a': 'NA',
-        'rat': 'rattus norvegicus (rat)',
-        'mice': 'mus musculus (mouse)'
-    })
-    
-    out['Condition'] = out['Condition'].replace({
-        'wildtype': 'normal',
-        'wtype': 'normal',
-        'healthy': 'normal'
-    })
-    
-    out['maldi_matrix'] = out['maldi_matrix'].replace({
-        '2,5-dihydroxybenzoic acid (DHB)': 'DHB',
-        'none': 'None',
-        'alpha-cyano-4-hydroxycinnamic acid (CHCA)': 'CHCA',
-        'N/A': 'NA',
-        'n-(1-naphthyl)ethylenediamine dihydrochloride (NEDC)' : 'NEDC',
-        '9-aminoacridine (9AA)': '9AA',
-        '2,5-dihydroxyacetophenone (DHA)': 'DHA',
-        '1,5-diaminonaphthalene (DAN)': 'DAN',
-        '1,8-bis(dimethylamino)naphthalene (DMAN)' : 'DMAN',
-        'ice': 'Ice',
-        'α-Cyano-4-hydroxycinnamic acid (HCCA)': 'HCCA',
-        '2,5-dihydroxyacetophenone (DHAP)': 'DHAP',
-        'trans-2-[3-(4-tert-Butylphenyl)-2-methyl-2-propenylidene] malononitrile (DCTB)': 'DCTB',
-        '2,5-dihydroxy benzoic acid (DHB)': 'DHB',
-        '2,4,6-Trihydroxyacetophenone (THAP)': 'THAP',
-        '1,5-diaminonaphthalene (DAN) | DHB': 'DAN, DHB',
-        '1,5-diaminonaphthalene (DAN)+HCl': 'DAN, HCl',
-        '1,5-diaminonaphthalene (DAN), DHB': 'DAN, DHB',
-        '2-Mercaptobenzothiazole (MBT)': 'MBT',
-        '2,5-dihydroxyacetophenone (DHAP)/Gold Sputter': 'DHAP, Au',
-        '2-Mercaptobenzothiazole (MBT)': 'MBT',
-        '2′,6′-Dihydroxyacetophenone (DHAP)': 'DHAP',
-        '5-chloro-2-Mercaptobenzothiazole (CMBT)': 'CMBT',
-        '2,5-dihydroxybenzoic acid (DHB)/Fe3O4 binary mix': 'DHB, Fe3O4',
-        'DHB and DAN': 'DAN, DHB',
-        'DHB, CHCA': 'DHB, CHCA',
-        'DHB/CHCA': 'DHB, CHCA',
-        'DHB/Fe3O4': 'DHB, Fe3O4',
-        'norharmane': 'Norharmane',
-        'norhramne': 'Norharmane'
-    })
+    out['Organism'] = out['Organism'].replace(md_mapping_dict(path, 'mapping_organism.csv'))
+    out['maldi_matrix'] = out['maldi_matrix'].replace(md_mapping_dict(path, 'mapping_maldimatrix.csv'))
+    out['Analyzer'] = out['Analyzer'].replace(md_mapping_dict(path, 'mapping_analyzer.csv'))
+    out['Ionisation_Source'] = out['Ionisation_Source'].replace(md_mapping_dict(path, 'mapping_source.csv'))
+    out['Organism_Part'] = out['Organism_Part'].replace(md_mapping_dict(path, 'mapping_organismpart.csv'))
     
     return out
 
@@ -242,9 +208,9 @@ def top_annotations(tup, db, top=10, n=4, is_ion=False):
             print(mol)
 
             
-def get_sig_molecules(adata, rg='ranked_genes', max_mols=None):
+def get_sig_molecules(adata, rg='ranked_genes', max_mols=None, pval_cutoff=0.01):
     
-    pvals = [x < 0.05 for x,y in adata.uns[rg]['pvals_adj']]
+    pvals = [x < pval_cutoff for x,y in adata.uns[rg]['pvals_adj']]
     
     names = np.array([x for x,y in adata.uns[rg]['names']])
     
