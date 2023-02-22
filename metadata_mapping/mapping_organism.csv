@@ -17,10 +17,10 @@ Pseudomonas putida | Pseudomonas savastanoi ,Multiple
 homo sapiens (human) ,Human
 Candida albicans | Escherichia coli ,Multiple
 mixed,Multiple
-Homo sapiens (human) ,Human
-Mus musculus (mouse) ,Mouse
-Rattus norvegicus (rat) ,Rat
-Brassica napus (rapeseed) ,Rapeseed
+Homo sapiens (human),Human
+Mus musculus (mouse),Mouse
+Rattus norvegicus (rat),Rat
+Brassica napus (rapeseed),Rapeseed
 Mouse,Mouse
 none,Other
-Danio rerio (zebrafish) ,Zebrafish
+Danio rerio (zebrafish),Zebrafish
