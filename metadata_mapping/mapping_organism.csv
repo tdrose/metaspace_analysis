@@ -2,8 +2,8 @@ Old,New
 homospaiens,Human
 Mouse,Mouse
 human,Human
-None,NA
-n/a,NA
+None,Other
+n/a,Other
 rat,Rat
 mice,Mouse
 Homo sapiens (human) | Mus musculus (mouse),Multiple
@@ -17,3 +17,10 @@ Pseudomonas putida | Pseudomonas savastanoi ,Multiple
 homo sapiens (human) ,Human
 Candida albicans | Escherichia coli ,Multiple
 mixed,Multiple
+Homo sapiens (human) ,Human
+Mus musculus (mouse) ,Mouse
+Rattus norvegicus (rat) ,Rat
+Brassica napus (rapeseed) ,Rapeseed
+Mouse,Mouse
+none,Other
+Danio rerio (zebrafish) ,Zebrafish
