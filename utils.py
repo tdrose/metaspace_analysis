@@ -71,8 +71,8 @@ def metadata_dict_totable(md):
         
     return pd.DataFrame(convert_dict)
 
-def md_mapping_dict(path, file):
-    df = pd.read_csv(os.path.join(path, file), na_filter = False)
+def md_mapping_dict(path, filename):
+    df = pd.read_csv(os.path.join(path, filename), na_filter = False)
     return dict(zip(df['Old'], df['New']))
 
 
