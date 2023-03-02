@@ -3,3 +3,5 @@
 *.err
 __pycache__/*
 *.csv#
+.Rproj.user
+*.Rproj

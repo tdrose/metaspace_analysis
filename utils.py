@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from anndata import AnnData
 import os
-
+from typing import Tuple
 
 
 
@@ -207,6 +207,15 @@ def top_annotations(tup, db, top=10, n=4, is_ion=False):
         else:
             print(mol)
 
+def annotations_list(formula_list, db, n=4, is_ion=False):
+    for i in range(len(formula_list)):
+        mol = formula_list[i]
+        if is_ion:
+            mol = mol.split('+')[0].split('-')[0]
+        if mol in db.index:
+            print(mol, ' - ', str(get_hmdb_names(db, mol)[:n]))
+        else:
+            print(mol)
             
 def get_sig_molecules(adata, rg='ranked_genes', max_mols=None, pval_cutoff=0.01):
     
@@ -249,3 +258,57 @@ def identifications(adata, sig_molecules, obsv):
     ratios['ratio'] = ratios['nonzeros'] / ratios['zeros']
             
     return ratios
+
+
+def tissue_prototyping(adat: AnnData, mol_freq_cutoff: float=0.1, top_ds_cutoff: float=0.2) -> Tuple[pd.Series, pd.Series, pd.Series]:
+    """
+    Find most characteristic datasets & molecular features per tissue.
+    
+    :param adat: AnnData object of one tissue
+    :param mol_freq_cutoff: Cut-off for molecule frequency (top ... fraction)
+    :param top_ds_cutoff: Cut-off for datasets (top ... fraction)
+    :return: mol_freq2 - Dataset frequency (using top datasets [top_ds_cutoff]) for top molecules (Molecules after mol_freq_cutoff is applied), 
+             top_datasets - Molecule frequency (using top molecules [mol_freq_cutoff]) for datasets (Datasets after top_ds_cutoff is applied), 
+             mol_freq - Dataset frequency (using all datasets in adat) for molecules (Molecules after mol_freq_cutoff is applied).
+    """
+    
+    # Compute frequency of Features
+    mol_freq = pd.Series((adat.X > 0).sum(axis=0), index=adat.var.index) / adat.X.shape[0]
+
+    plt.hist(mol_freq)
+    plt.show()
+    
+    # Find cutoff of top (mol_freq_cutoff) fraction of freatures
+    com = mol_freq.sort_values(ascending=False)[int(len(mol_freq)*mol_freq_cutoff)]
+    
+    # With these features find which datasets have the most of these top features
+    top_datasets = pd.Series((adat.X[:, mol_freq >= com] > 0).sum(axis=1), index=adat.obs.index)
+    
+    # Find cutoff of top (top_ds_cutoff) fraction of datasets
+    co = top_datasets.sort_values(ascending=False)[int(len(top_datasets)*top_ds_cutoff)]
+    
+    # Compute final most characteristic features fraction (mol_freq_cutoff) of features for the subset of datasets
+    mol_freq2 = pd.Series((adat.X[top_datasets>=co, :] > 0).sum(axis=0), index=adat.var.index) / adat.X[top_datasets>=co, :].shape[0]
+    
+    com2 = mol_freq2.sort_values(ascending=False)[int(len(mol_freq2)*mol_freq_cutoff)]
+    
+    return mol_freq2[mol_freq2>=com2], top_datasets[top_datasets>=co], mol_freq[mol_freq>=com]
+
+
+def update_minmax_mass(adat: AnnData):
+    
+    if 'mass' not in adat.var.columns:
+        raise KeyError(' "mass" must be in adat.var.columns')
+    
+    min_mass_dict = {}
+    max_mass_dict = {}
+
+    for i in range(adat.X.shape[0]):
+        ds_id = adat.obs.index[i]
+        dataslice = adat.X[i, :] > 0
+
+        min_mass_dict[ds_id] = adat.var['mass'][dataslice].min()
+        max_mass_dict[ds_id] = adat.var['mass'][dataslice].max()
+
+    adat.obs['minmass'] = pd.Series(min_mass_dict)
+    adat.obs['maxmass'] = pd.Series(max_mass_dict)
