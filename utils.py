@@ -260,14 +260,14 @@ def identifications(adata, sig_molecules, obsv):
     return ratios
 
 
-def tissue_prototyping(adat: AnnData, mol_freq_cutoff: float=0.1, top_ds_cutoff: float=0.2) -> Tuple[pd.Series, pd.Series, pd.Series]:
+def tissue_prototyping(adat: AnnData, mol_freq_cutoff: float=0.1, top_ds_cutoff: float=0.2, mol_freq2_cutoff: float=0.1) -> Tuple[pd.Series, pd.Series, pd.Series]:
     """
     Find most characteristic datasets & molecular features per tissue.
     
     :param adat: AnnData object of one tissue
     :param mol_freq_cutoff: Cut-off for molecule frequency (top ... fraction)
     :param top_ds_cutoff: Cut-off for datasets (top ... fraction)
-    :return: mol_freq2 - Dataset frequency (using top datasets [top_ds_cutoff]) for top molecules (Molecules after mol_freq_cutoff is applied), 
+    :return: mol_freq2 - Dataset frequency (using top datasets [top_ds_cutoff]) for top molecules (Molecules after mol_freq2_cutoff is applied), 
              top_datasets - Molecule frequency (using top molecules [mol_freq_cutoff]) for datasets (Datasets after top_ds_cutoff is applied), 
              mol_freq - Dataset frequency (using all datasets in adat) for molecules (Molecules after mol_freq_cutoff is applied).
     """
@@ -290,7 +290,7 @@ def tissue_prototyping(adat: AnnData, mol_freq_cutoff: float=0.1, top_ds_cutoff:
     # Compute final most characteristic features fraction (mol_freq_cutoff) of features for the subset of datasets
     mol_freq2 = pd.Series((adat.X[top_datasets>=co, :] > 0).sum(axis=0), index=adat.var.index) / adat.X[top_datasets>=co, :].shape[0]
     
-    com2 = mol_freq2.sort_values(ascending=False)[int(len(mol_freq2)*mol_freq_cutoff)]
+    com2 = mol_freq2.sort_values(ascending=False)[int(len(mol_freq2)*mol_freq2_cutoff)]
     
     return mol_freq2[mol_freq2>=com2], top_datasets[top_datasets>=co], mol_freq[mol_freq>=com]
 

@@ -332,10 +332,14 @@ for(i in files){
         
         # Enrichment w/ BG
         enr_wbg <- enrich(y, 
-                           universe=bg_name, 
-                           metabo_classes_univ=metabo_classes_univ, 
-                           metabo_subclasses_univ=metabo_subclasses_univ, 
-                           metabo_pathway_univ=metabo_pathway_univ)
+                          universe=bg_name, 
+                          metabo_classes_univ=metabo_classes_univ, 
+                          metabo_subclasses_univ=metabo_subclasses_univ, 
+                          metabo_pathway_univ=metabo_pathway_univ,
+                          boot_fract_cutoff=0.3, 
+                          min_annot = 1, 
+                          q.val_cutoff = 0.2
+                          )
         
         saveRDS(enr_wbg, paste0(enrichment_dir, 
                                  'enrichment_', polarity, '_wBG_', 
@@ -349,7 +353,11 @@ for(i in files){
                            universe=NULL, 
                            metabo_classes_univ=metabo_classes_univ, 
                            metabo_subclasses_univ=metabo_subclasses_univ, 
-                           metabo_pathway_univ=metabo_pathway_univ)
+                           metabo_pathway_univ=metabo_pathway_univ,
+                           boot_fract_cutoff=0.3, 
+                           min_annot = 1, 
+                           q.val_cutoff = 0.2
+                          )
         
         saveRDS(enr_wobg, paste0(enrichment_dir, 
                                  'enrichment_', polarity, '_woBG_', 
@@ -357,7 +365,7 @@ for(i in files){
                                  '.rds'
                                 ))
         
-        print('Finished enrichment w/o background')
+        #print('Finished enrichment w/o background')
         cat('\n\n')
     }
 
