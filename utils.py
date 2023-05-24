@@ -5,6 +5,7 @@ from tqdm import tqdm
 from anndata import AnnData
 import os
 from typing import Tuple
+from scipy import ndimage
 
 
 
@@ -312,3 +313,36 @@ def update_minmax_mass(adat: AnnData):
 
     adat.obs['minmass'] = pd.Series(min_mass_dict)
     adat.obs['maxmass'] = pd.Series(max_mass_dict)
+
+def coloc_preprocessing(adata, scaling=True):
+    if scaling:
+        conv = (adata.X/adata.X.sum(axis=0))*1e4
+    else:
+        conv = adata.X
+    
+    tmp = conv.transpose()
+    tmp = tmp.reshape((tmp.shape[0], adata.obs['y'].max()+1, -1))
+    tmp2 = ndimage.median_filter(tmp, size=(1,3,3))
+    
+    tmp3 = tmp2.reshape((tmp2.shape[0], -1))
+    mask = tmp3 < np.percentile(tmp3, q=50, axis=1)[:, np.newaxis]
+    tmp3[mask] = 0
+    
+    return tmp3
+
+
+def coloc_preprocessing_array(arr, maxy, scaling=True):
+    if scaling:
+        conv = (arr/arr.sum(axis=0))*1e4
+    else:
+        conv = arr
+    
+    tmp = conv.transpose()
+    tmp = tmp.reshape((tmp.shape[0], maxy, -1))
+    tmp2 = ndimage.median_filter(tmp, size=(1,3,3))
+    
+    tmp3 = tmp2.reshape((tmp2.shape[0], -1))
+    mask = tmp3 < np.percentile(tmp3, q=50, axis=1)[:, np.newaxis]
+    tmp3[mask] = 0
+    
+    return tmp3
