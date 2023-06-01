@@ -6,6 +6,7 @@ from anndata import AnnData
 import os
 from typing import Tuple
 from scipy import ndimage
+import math
 
 
 
@@ -346,3 +347,23 @@ def coloc_preprocessing_array(arr, maxy, scaling=True):
     tmp3[mask] = 0
     
     return tmp3
+
+
+def compute_subplot_arrangement(num_items):
+    factors = []
+    for i in range(2, int(math.sqrt(num_items)) + 1):
+        if num_items % i == 0:
+            factors.append((i, num_items // i))
+
+    best_score = float('-inf')
+    best_arrangement = None
+
+    for rows, cols in factors:
+        aspect_ratio = cols / rows
+        score = aspect_ratio * (rows + cols)  # Define your scoring function here
+
+        if score > best_score:
+            best_score = score
+            best_arrangement = (rows, cols)
+
+    return best_arrangement
