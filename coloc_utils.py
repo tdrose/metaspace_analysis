@@ -17,6 +17,7 @@ import linex2metaspace as lx2m
 from scipy import stats
 import networkx as nx
 
+import utils
 from config import store_dir, data_dir, date_key, enrichment_dir
 
 def load_tissue_datasets(ds_list: pd.Series, include_offsample: bool=False, fdr: float=0.1, path=os.path.join(store_dir, 'all_ionimages/')) -> Dict[str, AnnData]:
