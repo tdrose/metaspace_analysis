@@ -17,6 +17,8 @@ import linex2metaspace as lx2m
 from scipy import stats
 import networkx as nx
 
+import multiprocessing as mp
+
 import utils
 from config import store_dir, data_dir, date_key, enrichment_dir
 
@@ -141,23 +143,34 @@ def coloc_measures(ii_dict: Dict[Tuple[str, str], List[float]],
     cv_l = []
     cooc_l = []
     ion_pairs = []
+    iqr_l = []
+    mediqr_l = []
 
     for ii, x in ii_dict.items():
         if len(x) >= min_datasets:
             if not all(np.array(x)==0):
                 mean_l.append(np.mean(x))
-                median_l.append(np.median(x))
                 var_l.append(np.var(x))
                 cv_l.append(np.std(x)/np.mean(x))
                 cooc_l.append(len(x)/num_datasets)
                 ion_pairs.append(ii)
+                
+                med = np.median(x)
+                iqr = stats.iqr(x)
+                median_l.append(med)
+                iqr_l.append(iqr)
+                mediqr_l.append(med/iqr)
+                
     
     return pd.DataFrame({'mean': mean_l, 
                          'variance': var_l, 
                          'cv': cv_l, 
                          'coocurrence': cooc_l, 
                          'ion_pairs': ion_pairs, 
-                         'median': median_l}).set_index('ion_pairs', drop=False)
+                         'median': median_l,
+                         'iqr': iqr_l,
+                         'mediqr': mediqr_l
+                        }).set_index('ion_pairs', drop=False)
 
 def compute_lx_nets(coloc_dict: Dict[str, pd.DataFrame], molecule_names: Dict[str, List], ref_lip_dict, class_reacs, bootstraps: int=30):
     lx_nets = {}
@@ -212,12 +225,65 @@ def catch_sp(g, source, target):
         return nx.shortest_path_length(g, source, target)
     except nx.NetworkXNoPath:
         return np.inf
+
     
+def coloc_worker(items, min_dataset_fraction, shuffle):
+    
+    tissue, adatas = items
+    print(tissue)
+        
+    tmp = int(len(adatas)*min_dataset_fraction)
+    min_datasets = tmp if tmp>2 else 2
+    
+    out_dict = {}
+    
+    if shuffle:
+        coloc_dict, molecule_names = compute_colocs_shuffle(adatas)
+    else:
+        coloc_dict, molecule_names = compute_colocs(adatas)
+    ii_dict = list_same_colocs(coloc_dict)
+    c_measures = coloc_measures(ii_dict, min_datasets=min_datasets, num_datasets=len(adatas))
+
+    if not shuffle:
+        out_dict['coloc_dict'] = coloc_dict
+        out_dict['molecule_names'] = molecule_names
+        out_dict['ii_dict'] = ii_dict
+        out_dict['c_measures_min_datasets'] = min_datasets
+
+    out_dict['c_measures'] = c_measures
+    
+    print(f'{tissue} finished')
+    
+    return (tissue, out_dict)
+
+def all_tissue_colocs_mp(tissue_adatas: Dict[str, Dict[str, AnnData]], min_dataset_fraction: int=0.3, shuffle: bool=False, threads: int=4):
+    
+    pool = mp.Pool(threads)
+
+    # Step 2: `pool.apply` the `howmany_within_range()`
+    results = [pool.apply_async(coloc_worker, args=(it, min_dataset_fraction, shuffle)) for it in tissue_adatas.items()]
+
+    # Step 3: Don't forget to close
+    pool.close()    
+    
+    out = {}
+    for x in results:
+        tmp = x.get()
+        out[tmp[0]] = tmp[1]
+        
+    return out
+
 def all_tissue_colocs(tissue_adatas: Dict[str, Dict[str, AnnData]], min_dataset_fraction: int=0.3, shuffle: bool=False):
     
     out_dict = {}
     for tissue, adatas in tissue_adatas.items():
+        
         print(tissue)
+        
+        tmp = int(len(adatas)*min_dataset_fraction)
+        min_datasets = tmp if tmp>2 else 2
+        
+        
         out_dict[tissue] = {}
         
         if shuffle:
@@ -225,10 +291,6 @@ def all_tissue_colocs(tissue_adatas: Dict[str, Dict[str, AnnData]], min_dataset_
         else:
             coloc_dict, molecule_names = compute_colocs(adatas)
         ii_dict = list_same_colocs(coloc_dict)
-        
-        tmp = int(len(adatas)*min_dataset_fraction)
-        
-        min_datasets = tmp if tmp>2 else 2
         
         c_measures = coloc_measures(ii_dict, min_datasets=min_datasets, num_datasets=len(adatas))
         
@@ -245,7 +307,7 @@ def flatten(l):
     return [item for subl in l for item in subl]
 
 
-def coloc_pvalues(original_colocs, shuffled_colocs_list, metric: str = 'mean', ):
+def coloc_pvalues(original_colocs, shuffled_colocs_list, metric: str = 'mean', var: str = 'pvalue'):
     
     for tissue in original_colocs.keys():
         pval_dict = {}
@@ -264,5 +326,50 @@ def coloc_pvalues(original_colocs, shuffled_colocs_list, metric: str = 'mean', )
             for ion_pair, value in oc[metric].items():
                 # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC379178/
                 pval_dict[ion_pair] = (sum(sc[metric] >= value)+1) / (len(sc[metric])+1)
-                
-        original_colocs[tissue]['c_measures']['pvalue'] = pd.Series(pval_dict) * len(pval_dict)
+        
+        original_colocs[tissue]['c_measures'][f'{var}'] = pd.Series(pval_dict)
+        original_colocs[tissue]['c_measures'][f'{var}_corr'] = pd.Series(pval_dict) * len(pval_dict)
+        
+
+def coloc_pval_worker(tissue, original_colocs, shuffled_colocs_list, metric):
+    
+    print(f'{tissue} pval')
+    
+    pval_dict = {}
+    # get set of all co-occurrences
+    coloc_levels = set([x for x in original_colocs[tissue]['c_measures']['coocurrence'].values])
+    for cl in coloc_levels:
+        # select only pairs of the same number of colocs
+        oc = original_colocs[tissue]['c_measures'][original_colocs[tissue]['c_measures']['coocurrence'] == cl]
+        scl = []
+        for sc_item in shuffled_colocs_list:
+            scl.append(sc_item[tissue]['c_measures'][sc_item[tissue]['c_measures']['coocurrence'] == cl])
+
+        sc = pd.concat(scl)
+
+        # Loop over every original value:
+        for ion_pair, value in oc[metric].items():
+            # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC379178/
+            pval_dict[ion_pair] = (sum(sc[metric] >= value)+1) / (len(sc[metric])+1)
+            
+    print(f'{tissue} pval finished')
+            
+    return (tissue, pd.Series(pval_dict), pd.Series(pval_dict) * len(pval_dict))
+    
+        
+def coloc_pvalues_mp(original_colocs, shuffled_colocs_list, metric: str = 'mean', var: str = 'pvalue', threads: int=4):
+    
+    pool = mp.Pool(threads)
+
+    # Step 2: `pool.apply` the `howmany_within_range()`
+    results = [pool.apply_async(coloc_pval_worker, args=(tissue, original_colocs, shuffled_colocs_list, metric)) for tissue in original_colocs.keys()]
+
+    # Step 3: Don't forget to close
+    pool.close()    
+    
+    out = {}
+    for x in results:
+        (tis, pval, pval_corr) = x.get()
+        
+        original_colocs[tis]['c_measures'][f'{var}'] = pval
+        original_colocs[tis]['c_measures'][f'{var}_corr'] = pval_corr
