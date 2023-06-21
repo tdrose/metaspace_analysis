@@ -5,11 +5,8 @@ import pickle
 from metaspace import SMInstance
 from metaspace2anndata import dataset_to_anndata
 
-
-date_key = '230201'
-
-data_dir = '/g/alexandr/tim/metaspace_evaluation/'
-store_dir = os.path.join(data_dir, date_key)
+sys.path.append("..") # Adds higher directory to python modules path.
+from config import store_dir, data_dir, date_key, enrichment_dir
 
 # List of datasets to download
 nm = pickle.load(open(os.path.join(store_dir, 'DatasetsForDownload_Neg_Met.pickle'), "rb" ) )

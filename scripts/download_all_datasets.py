@@ -13,16 +13,8 @@ from metaspace import SMInstance
 from anndata import AnnData
 from metaspace2anndata import dataset_to_anndata
 
-
-date_key = '230201'
-
-# Store in Alexandrov g drive
-data_dir = '/g/alexandr/tim/metaspace_evaluation/'
-
-store_dir = os.path.join(data_dir, date_key)
-
-if date_key not in os.listdir(data_dir):
-    os.mkdir(store_dir)
+sys.path.append("..") # Adds higher directory to python modules path.
+from config import store_dir, data_dir, date_key, enrichment_dir
     
 
 dss = pickle.load(open(os.path.join(store_dir, 'all_datasets.pickle'), "rb" ) )
