@@ -23,7 +23,7 @@ thr = 6
 n_shuffles = 1000
 tissue_colocs_shuffle_list = [all_tissue_colocs_mp(tissue_adatas=tissue_ads, 
                                                    min_dataset_fraction=0.2, 
-                                                   shuffle=False, 
+                                                   shuffle=True, 
                                                    threads=thr) for x in range(n_shuffles)]
 
 tissue_colocs = all_tissue_colocs_mp(tissue_adatas=tissue_ads, min_dataset_fraction=0.2, shuffle=False, threads=thr)
