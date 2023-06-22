@@ -1,0 +1,86 @@
+---
+title: "MISTy_analysis"
+author: "Tim Daniel Rose"
+date: "2023-06-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Libraries
+```{r}
+library(mistyR)
+library(future)
+
+# data manipulation
+library(dplyr)
+library(purrr)
+library(distances)
+
+# plotting
+library(ggplot2)
+
+#plan(multisession, workers=2)
+plan(sequential)
+```
+
+
+# Load data
+```{r}
+data("synthetic")
+
+ggplot(synthetic[[1]], aes(x = col, y = row, color = type)) +
+  geom_point(shape = 15, size = 0.7) +
+  scale_color_manual(values = c("#e9eed3", "#dcc38d", "#c9e2ad", "#a6bab6")) +
+  theme_void()
+```
+
+# Create views
+
+## Intra
+```{r}
+expr <- synthetic[[1]] %>% select(-c(row, col, type, starts_with("lig")))
+
+misty.intra <- create_initial_view(expr)
+
+summary(misty.intra)
+```
+
+## Para
+```{r}
+pos <- synthetic[[1]] %>% select(row, col)
+
+misty.views <- misty.intra %>% add_paraview(pos, l = 10)
+#> 
+#> Generating paraview
+
+summary(misty.views)
+```
+
+## Juxta
+```{r}
+#misty.views <- misty.views %>% add_juxtaview(pos, neighbor.thr = 30)
+
+summary(misty.views)
+```
+
+# Run MISTy
+```{r}
+misty.views %>% run_misty(results.folder = "/scratch/trose/misty_test")
+```
+
+# Run MISTy on all datasets
+```{r}
+result.folders <- synthetic %>% imap_chr(function(sample, name) {
+  sample.expr <- sample %>% select(-c(row, col, type, starts_with("lig")))
+  sample.pos <- sample %>% select(row, col)
+  
+  create_initial_view(sample.expr) %>% add_paraview(sample.pos, l = 10) %>%
+    run_misty(results.folder = paste0("/scratch/trose/misty_test2", .Platform$file.sep, name))
+})
+```
+
+
+
