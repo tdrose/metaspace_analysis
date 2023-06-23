@@ -357,7 +357,7 @@ def coloc_pval_worker(tissue, original_colocs, shuffled_colocs_list, metric):
     return (tissue, pd.Series(pval_dict), pd.Series(pval_dict) * len(pval_dict))
     
         
-def coloc_pvalues_mp(original_colocs, shuffled_colocs_list, metric: str = 'mean', var: str = 'pvalue', threads: int=4):
+def coloc_pvalues_mp(original_colocs, shuffled_colocs_list, metric: str = 'mean', threads: int=4):
     
     pool = mp.Pool(threads)
 
@@ -371,5 +371,5 @@ def coloc_pvalues_mp(original_colocs, shuffled_colocs_list, metric: str = 'mean'
     for x in results:
         (tis, pval, pval_corr) = x.get()
         
-        original_colocs[tis]['c_measures'][f'{var}'] = pval
-        original_colocs[tis]['c_measures'][f'{var}_corr'] = pval_corr
+        original_colocs[tis]['c_measures'][f'pval_{metric}'] = pval
+        original_colocs[tis]['c_measures'][f'pval_{metric}_corr'] = pval_corr

@@ -23,8 +23,8 @@ tissue_colocs_shuffle_list = [all_tissue_colocs_mp(tissue_adatas=tissue_ads,
 
 tissue_colocs = all_tissue_colocs_mp(tissue_adatas=tissue_ads, min_dataset_fraction=0.2, shuffle=False, threads=thr)
 
-coloc_pvalues_mp(tissue_colocs, tissue_colocs_shuffle_list, metric='mean', var='mean', threads=thr)
-coloc_pvalues_mp(tissue_colocs, tissue_colocs_shuffle_list, metric='mediqr', var='mediqr', threads=thr)
+coloc_pvalues_mp(tissue_colocs, tissue_colocs_shuffle_list, metric='mean', threads=thr)
+coloc_pvalues_mp(tissue_colocs, tissue_colocs_shuffle_list, metric='mediqr', threads=thr)
 
 pickle.dump(tissue_colocs, 
             open(os.path.join(store_dir, 'neg_met_tissue_colocs.pickle'), "wb"))
