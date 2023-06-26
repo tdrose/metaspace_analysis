@@ -172,12 +172,14 @@ def coloc_measures(ii_dict: Dict[Tuple[str, str], List[float]],
                          'mediqr': mediqr_l
                         }).set_index('ion_pairs', drop=False)
 
-def compute_lx_nets(coloc_dict: Dict[str, pd.DataFrame], molecule_names: Dict[str, List], ref_lip_dict, class_reacs, bootstraps: int=30):
+def compute_lx_nets(coloc_dict: Dict[str, pd.DataFrame], molecule_names: Dict[str, List], ref_lip_dict, class_reacs, bootstraps: int=30, tissue = None):
     lx_nets = {}
     lx_annotations = {}
-
+    if tissue is not None:
+            print(tissue)
+            
     for dsid in coloc_dict.keys():
-
+        
         tmp_annotations = pd.Series({x: molecule_names[x] for x in coloc_dict[dsid].columns})
 
         parsed_lipids = lx2m.parse_annotation_series(tmp_annotations, 
@@ -204,11 +206,45 @@ def compute_lx_nets(coloc_dict: Dict[str, pd.DataFrame], molecule_names: Dict[st
 
         lx_nets[dsid] = ion_net
         lx_annotations[dsid] = parsed_annotations
-        
-    return lx_nets, lx_annotations
+    
+    if tissue is None:
+        return lx_nets, lx_annotations
+    else:
+        print(f'{tissue} done')
+        return lx_nets, lx_annotations, tissue
 
 def tissue_lx_nets(tissue_colocs: Dict[str, pd.DataFrame], ref_lip_dict, class_reacs, bootstraps: int=30):
     
+    out_dict = {}
+    for tissue, colocs in tissue_colocs.items():
+        print(tissue)
+        out_dict[tissue] = {}
+        nets, annotations = compute_lx_nets(colocs['coloc_dict'], molecule_names=colocs['molecule_names'], 
+                                            ref_lip_dict=ref_lip_dict, class_reacs=class_reacs, bootstraps=bootstraps)
+        out_dict[tissue]['nets'] = nets
+        out_dict[tissue]['parsed_annotations'] = annotations
+    
+    return out_dict
+
+def tissue_lx_nets_mp(tissue_colocs: Dict[str, pd.DataFrame], ref_lip_dict, class_reacs, bootstraps: int=30, threads=3):
+    
+    pool = mp.Pool(threads)
+
+    results = [pool.apply_async(compute_lx_nets, args=(colocs['coloc_dict'], colocs['molecule_names'], 
+                                                       ref_lip_dict, class_reacs, bootstraps, tissue)) for tissue, colocs in tissue_colocs.items()]
+    
+    # Step 3: Don't forget to close
+    pool.close() 
+    
+    out_dict = {}
+    for x in results:
+        nets, annotations, tissue = x.get()
+        out_dict[tissue] = {}
+        out_dict[tissue]['nets'] = nets
+        out_dict[tissue]['parsed_annotations'] = annotations
+        
+    return out_dict
+
     out_dict = {}
     for tissue, colocs in tissue_colocs.items():
         print(tissue)
