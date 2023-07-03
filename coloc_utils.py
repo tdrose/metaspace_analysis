@@ -16,6 +16,7 @@ import metaspace
 import linex2metaspace as lx2m
 from scipy import stats
 import networkx as nx
+import time
 
 import multiprocessing as mp
 
@@ -409,3 +410,95 @@ def coloc_pvalues_mp(original_colocs, shuffled_colocs_list, metric: str = 'mean'
         
         original_colocs[tis]['c_measures'][f'pval_{metric}'] = pval
         original_colocs[tis]['c_measures'][f'pval_{metric}_corr'] = pval_corr
+
+        
+def shuffle_symmetric_array(arr):
+    n = arr.shape[0]  # Number of rows/columns
+
+    # Step 1: Extract the lower triangle
+    lower_triangle = arr[np.tril_indices(n, k=-1)]
+
+    # Step 2: Shuffle the values in the lower triangle
+    np.random.shuffle(lower_triangle)
+
+    # Step 3: Assign the shuffled values back to the lower triangle
+    arr2 = np.ones(arr.shape)
+    
+    arr2[np.tril_indices(n, k=-1)] = lower_triangle
+
+    # Copy the lower triangle to the upper triangle to preserve symmetry
+    arr2.T[np.tril_indices(n, k=-1)] = lower_triangle
+
+    return arr2
+
+
+def coloc_sampling_worker(items, min_dataset_fraction, save_coloc_dict):
+    
+    tissue, measures = items
+    print(tissue)
+        
+    tmp = int(len(measures['coloc_dict'])*min_dataset_fraction)
+    min_datasets = tmp if tmp>2 else 2
+    
+    
+    
+    # shuffling
+    # 1. append all lower triangle values to a long array
+    all_coloc_array = np.array([])
+    
+    for k, v in measures['coloc_dict'].items():
+        curr_array = np.array(v)
+        curr_lower_triangle = curr_array[np.tril_indices(curr_array.shape[0], k=-1)]
+        all_coloc_array = np.append(all_coloc_array, curr_lower_triangle)
+    
+    # 2. shuffle list of all colocs
+    np.random.seed((os.getpid() * int(time.time())) % 123456789)
+    np.random.shuffle(all_coloc_array)
+    
+    # 3. place them back in original coloc matrix
+    coloc_dict = {}
+    counter = 0
+    for k, v in measures['coloc_dict'].items():
+        # make new array
+        curr_array = np.array(v)
+        
+        upper = curr_array[np.tril_indices(curr_array.shape[0], k=-1)].shape[0]
+        lower_triangle = all_coloc_array[counter:(counter+upper)]
+        counter += upper
+        
+        arr2 = np.ones(curr_array.shape)
+        arr2[np.tril_indices(curr_array.shape[0], k=-1)] = lower_triangle.copy()
+
+        # Copy the lower triangle to the upper triangle to preserve symmetry
+        arr2.T[np.tril_indices(curr_array.shape[0], k=-1)] = lower_triangle.copy()
+        
+        coloc_dict[k] = pd.DataFrame(arr2.copy(), columns=v.columns, index=v.index)
+    
+    ii_dict = list_same_colocs(coloc_dict)
+    c_measures = coloc_measures(ii_dict, min_datasets=min_datasets, num_datasets=len(measures['coloc_dict']))
+    
+    out_dict = {}
+    out_dict['c_measures'] = c_measures
+    if save_coloc_dict:
+        out_dict['coloc_dict'] = coloc_dict
+    
+    print(f'{tissue} finished')
+    
+    return (tissue, out_dict)
+
+def all_tissue_coloc_sampling_mp(tissue_colocs, min_dataset_fraction=0.3, threads: int=4, save_coloc_dict=False):
+    
+    pool = mp.Pool(threads)
+
+    # Step 2: `pool.apply` the `howmany_within_range()`
+    results = [pool.apply_async(coloc_sampling_worker, args=(it, min_dataset_fraction, save_coloc_dict)) for it in tissue_colocs.items()]
+
+    # Step 3: Don't forget to close
+    pool.close()    
+    
+    out = {}
+    for x in results:
+        tmp = x.get()
+        out[tmp[0]] = tmp[1]
+        
+    return out
