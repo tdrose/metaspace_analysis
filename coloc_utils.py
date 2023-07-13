@@ -49,24 +49,31 @@ def compute_colocs(ads: Dict[str, AnnData]) -> Tuple[Dict[str, pd.DataFrame], Di
 
     for dsid, adat in ads.items():
 
-        unique_labels = np.unique(adat.var.formula)
+        # Remove isobars
+        if 'has_isobar' in adat.var.columns:
+            adat2 = adat[:, ~adat.var['has_isobar']]
+        else:
+            adat2 = adat
+            
+        unique_labels = np.unique(adat2.var.formula)
         sums = {}
 
         # Iterate over the unique labels
         for label in unique_labels:
+            
             # Get the indices of rows with the current label
-            indices = np.where(adat.var.formula == label)[0]
+            indices = np.where(adat2.var.formula == label)[0]
             # Sum up the corresponding rows and store the result
             if len(indices)>1:
-                sums[label] = np.sum(adat.X[:, indices], axis=1)
+                sums[label] = np.sum(adat2.X[:, indices], axis=1)
             else:
-                sums[label] = adat.X[:, indices[0]]
+                sums[label] = adat2.X[:, indices[0]]
 
-            molecule_names[label] = adat.var[adat.var['formula']==label]['moleculeNames'][0]
+            molecule_names[label] = adat2.var[adat2.var['formula']==label]['moleculeNames'][0]
 
         tmp_array = np.stack(list(sums.values()))
         tmp_molecules = np.array(list(sums.keys()))
-        tmp_ymax = adat.obs['y'].max()+1
+        tmp_ymax = adat2.obs['y'].max()+1
 
         # Coloc preprocessing:
         conv_data = utils.coloc_preprocessing_array(tmp_array.transpose(), tmp_ymax)
@@ -214,18 +221,6 @@ def compute_lx_nets(coloc_dict: Dict[str, pd.DataFrame], molecule_names: Dict[st
         print(f'{tissue} done')
         return lx_nets, lx_annotations, tissue
 
-def tissue_lx_nets(tissue_colocs: Dict[str, pd.DataFrame], ref_lip_dict, class_reacs, bootstraps: int=30):
-    
-    out_dict = {}
-    for tissue, colocs in tissue_colocs.items():
-        print(tissue)
-        out_dict[tissue] = {}
-        nets, annotations = compute_lx_nets(colocs['coloc_dict'], molecule_names=colocs['molecule_names'], 
-                                            ref_lip_dict=ref_lip_dict, class_reacs=class_reacs, bootstraps=bootstraps)
-        out_dict[tissue]['nets'] = nets
-        out_dict[tissue]['parsed_annotations'] = annotations
-    
-    return out_dict
 
 def tissue_lx_nets_mp(tissue_colocs: Dict[str, pd.DataFrame], ref_lip_dict, class_reacs, bootstraps: int=30, threads=3):
     
@@ -309,36 +304,6 @@ def all_tissue_colocs_mp(tissue_adatas: Dict[str, Dict[str, AnnData]], min_datas
         out[tmp[0]] = tmp[1]
         
     return out
-
-def all_tissue_colocs(tissue_adatas: Dict[str, Dict[str, AnnData]], min_dataset_fraction: int=0.3, shuffle: bool=False):
-    
-    out_dict = {}
-    for tissue, adatas in tissue_adatas.items():
-        
-        print(tissue)
-        
-        tmp = int(len(adatas)*min_dataset_fraction)
-        min_datasets = tmp if tmp>2 else 2
-        
-        
-        out_dict[tissue] = {}
-        
-        if shuffle:
-            coloc_dict, molecule_names = compute_colocs_shuffle(adatas)
-        else:
-            coloc_dict, molecule_names = compute_colocs(adatas)
-        ii_dict = list_same_colocs(coloc_dict)
-        
-        c_measures = coloc_measures(ii_dict, min_datasets=min_datasets, num_datasets=len(adatas))
-        
-        if not shuffle:
-            out_dict[tissue]['coloc_dict'] = coloc_dict
-            out_dict[tissue]['molecule_names'] = molecule_names
-            out_dict[tissue]['ii_dict'] = ii_dict
-            out_dict[tissue]['c_measures_min_datasets'] = min_datasets
-        
-        out_dict[tissue]['c_measures'] = c_measures
-    return out_dict
 
 def flatten(l):
     return [item for subl in l for item in subl]
@@ -502,3 +467,129 @@ def all_tissue_coloc_sampling_mp(tissue_colocs, min_dataset_fraction=0.3, thread
         out[tmp[0]] = tmp[1]
         
     return out
+
+
+def mark_isobars(tissue_adatas, ppm_threshold=3):
+    for tis in tissue_adatas.keys():
+        for dsid, ds in tissue_adatas[tis].items():
+            has_isobar = pd.Series(False, index=ds.var.index)
+
+            tmp = ds.var['mz'].values
+            for i in range(len(tmp)):
+                for j in range(len(tmp)):
+                    if i != j:
+                        if abs((tmp[i]-tmp[j])/tmp[i])*1e6 < ppm_threshold:
+                            has_isobar[i] = True
+                            has_isobar[j] = True
+            tissue_adatas[tis][dsid].var['has_isobar'] = has_isobar
+    return tissue_adatas
+
+
+
+lipid_class_colors = {
+    "ACoA": "#ffffff",
+    "ACar": "#ffffff",
+    "NAE": "#ffffff",
+    "NEFA": "#ffffff",
+    "MG": "#f1c232",
+    "MGO": "#d0a728",
+    "MGMG": "#ffffff",
+    "MGMGO": "#ffffff",
+    "DGMG": "#ffffff",
+    "SQMG": "#ffffff",
+    "DG": "#bf9000",
+    "DGO": "#9d7703",
+    "MGDG": "#ffffff",
+    "MGDGO": "#ffffff",
+    "DGDG": "#ffffff",
+    "TGDG": "#ffffff",
+    "SQDG": "#ffffff",
+    "SQDGO": "#ffffff",
+    "TG": "#7f6000",
+    "TGO": "#634b01",
+    "BMP": "#ffffff",
+    "CL": "#e35913",
+    "MLCL": "#e57e4a",
+    "DLCL": "#e8a888",
+    "CDPDAG": "#b8a69a",
+    "LCDPDAG": "#ffffff",
+    "PE": "#3c78d8",
+    "PEO": "#1c4588",
+    "PEP": "#1c4589",
+    "LPE": "#a4c2f4",
+    "LPEO": "#4f739d",
+    "MMPE": "#ffffff",
+    "LMMPE": "#ffffff",
+    "DMPE": "#ffffff",
+    "LDMPE": "#ffffff",
+    "NAPE": "#ffffff",
+    "NAPEO": "#ffffff",
+    "NALPE": "#ffffff",
+    "NALPEO": "#ffffff",
+    "PC": "#6aa84f",
+    "PCO": "#38761d",
+    "LPC": "#b6d7a8",
+    "LPCO": "#93c47d",
+    "PA": "#00ffff",
+    "PAO": "#009d9d",
+    "LPA": "#cbffff",
+    "LPAO": "#a9e5e5",
+    "DGPP": "#ffffff",
+    "PG": "#ff0000",
+    "LPG": "#e06666",
+    "LysylPG": "#ffffff",
+    "PGP": "#ffffff",
+    "LPGP": "#ffffff",
+    "PI": "#b215da",
+    "LPI": "#c470da",
+    "PIM": "#ffffff",
+    "LPIM": "#ffffff",
+    "PIMIP": "#ffffff",
+    "LPIMIP": "#ffffff",
+    "PIN": "#ffffff",
+    "LPIN": "#ffffff",
+    "PIP": "#660d7d",
+    "PIP2": "#4c0a5d",
+    "PIP3": "#280530",
+    "PS": "#c0e510",
+    "LPS": "#dced8c",
+    "Dol-": "#ffffff",
+    "DolP-": "#ffffff",
+    "DolPHex-": "#ffffff",
+    "GD1": "#ffffff",
+    "GD2": "#ffffff",
+    "GD3": "#ffffff",
+    "GD4": "#ffffff",
+    "GM1": "#ffffff",
+    "GM2": "#ffffff",
+    "GM3": "#ffffff",
+    "GM4": "#ffffff",
+    "GT1": "#ffffff",
+    "GT2": "#ffffff",
+    "GT3": "#ffffff",
+    "GA1": "#ffffff",
+    "GQ3/2/1": "#ffffff",
+    "GP3/2/1": "#ffffff",
+    "LCB": "#f18ea5",
+    "LCBP": "#c9909d",
+    "Cer": "#f24a71",
+    "CerP": "#ffffff",
+    "EPC": "#ffffff",
+    "HexCer": "#b03350",
+    "LHexCer": "#ffffff",
+    "SHexCer": "#ffffff",
+    "LSHexCer": "#ffffff",
+    "Hex2Cer": "#671e2f",
+    "Hex3Cer": "#41121d",
+    "IPC": "#ffffff",
+    "LIPC": "#ffffff",
+    "MIPC": "#ffffff",
+    "M(IP)2C": "#ffffff",
+    "SM": "#f24aa4",
+    "LSM": "#d9d9d9",
+    "ACer": "#d9d9d9",
+    "ST": "#d9d9d9",
+    "Chol": "#ffff00",
+    "SE": "#d9d9d9",
+    "CE": "#cfcf00"
+}

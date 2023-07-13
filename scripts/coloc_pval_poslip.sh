@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J coloc_pvalues
+#SBATCH -J poslip_coloc
 #SBATCH -A alexandr                # group to which you belong
 #SBATCH -N 1                        # number of nodes
 #SBATCH -n 10                        # number of cores
