@@ -45,6 +45,7 @@ def load_alltissue_datasets(tissue_ds_dict: Dict[str, pd.Series], include_offsam
 def compute_colocs(ads: Dict[str, AnnData]) -> Tuple[Dict[str, pd.DataFrame], Dict[str, List]]:
     
     molecule_names = {}
+    molecule_ids = {}
     coloc_dict = {}
 
     for dsid, adat in ads.items():
@@ -70,6 +71,7 @@ def compute_colocs(ads: Dict[str, AnnData]) -> Tuple[Dict[str, pd.DataFrame], Di
                 sums[label] = adat2.X[:, indices[0]]
 
             molecule_names[label] = adat2.var[adat2.var['formula']==label]['moleculeNames'][0]
+            molecule_ids[label] = adat2.var[adat2.var['formula']==label]['moleculeIds'][0]
 
         tmp_array = np.stack(list(sums.values()))
         tmp_molecules = np.array(list(sums.keys()))
@@ -84,7 +86,7 @@ def compute_colocs(ads: Dict[str, AnnData]) -> Tuple[Dict[str, pd.DataFrame], Di
 
         coloc_dict[dsid] = coloc_df
         
-    return coloc_dict, molecule_names
+    return coloc_dict, molecule_names, molecule_ids
 
 def compute_colocs_shuffle(ads: Dict[str, AnnData]) -> Tuple[Dict[str, pd.DataFrame], Dict[str, List]]:
     
@@ -180,7 +182,7 @@ def coloc_measures(ii_dict: Dict[Tuple[str, str], List[float]],
                          'mediqr': mediqr_l
                         }).set_index('ion_pairs', drop=False)
 
-def compute_lx_nets(coloc_dict: Dict[str, pd.DataFrame], molecule_names: Dict[str, List], ref_lip_dict, class_reacs, bootstraps: int=30, tissue = None):
+def compute_lx_nets(coloc_dict: Dict[str, pd.DataFrame], molecule_names: Dict[str, List], molecule_ids, ref_lip_dict, class_reacs, bootstraps: int=30, tissue = None):
     lx_nets = {}
     lx_annotations = {}
     if tissue is not None:
@@ -189,10 +191,13 @@ def compute_lx_nets(coloc_dict: Dict[str, pd.DataFrame], molecule_names: Dict[st
     for dsid in coloc_dict.keys():
         
         tmp_annotations = pd.Series({x: molecule_names[x] for x in coloc_dict[dsid].columns})
+        tmp_ids = pd.Series({x: molecule_ids[x] for x in coloc_dict[dsid].columns})
 
         parsed_lipids = lx2m.parse_annotation_series(tmp_annotations, 
                                                      ref_lip_dict, 
-                                                     verbose=False) # True if you want to see all lipids that were not parsed
+                                                     verbose=False,
+                                                     db_ids=tmp_ids
+                                                    ) # True if you want to see all lipids that were not parsed
 
         keep_annotations = lx2m.annotations_parsed_lipids(parsed_lipids)
         parsed_annotations = pd.DataFrame({'molecule_names': tmp_annotations, 'parsed_lipids': parsed_lipids})
@@ -226,7 +231,7 @@ def tissue_lx_nets_mp(tissue_colocs: Dict[str, pd.DataFrame], ref_lip_dict, clas
     
     pool = mp.Pool(threads)
 
-    results = [pool.apply_async(compute_lx_nets, args=(colocs['coloc_dict'], colocs['molecule_names'], 
+    results = [pool.apply_async(compute_lx_nets, args=(colocs['coloc_dict'], colocs['molecule_names'], colocs['molecule_ids'],
                                                        ref_lip_dict, class_reacs, bootstraps, tissue)) for tissue, colocs in tissue_colocs.items()]
     
     # Step 3: Don't forget to close
@@ -270,15 +275,17 @@ def coloc_worker(items, min_dataset_fraction, shuffle):
     out_dict = {}
     
     if shuffle:
+        print('Warning! Calling legacy shuffling')
         coloc_dict, molecule_names = compute_colocs_shuffle(adatas)
     else:
-        coloc_dict, molecule_names = compute_colocs(adatas)
+        coloc_dict, molecule_names, molecule_ids = compute_colocs(adatas)
     ii_dict = list_same_colocs(coloc_dict)
     c_measures = coloc_measures(ii_dict, min_datasets=min_datasets, num_datasets=len(adatas))
 
     if not shuffle:
         out_dict['coloc_dict'] = coloc_dict
         out_dict['molecule_names'] = molecule_names
+        out_dict['molecule_ids'] = molecule_ids
         out_dict['ii_dict'] = ii_dict
         out_dict['c_measures_min_datasets'] = min_datasets
 
