@@ -10,15 +10,15 @@ store_path = analysis_config$store_dir
 enrichment_path = analysis_config$enrichment_dir
 
 
-metabo_exact_masses = readRDS("enrichment_utils/all_exact_masses.rds")
-metaspace_databases = readRDS("enrichment_utils/all_metaspace_databases.rds")
+metabo_exact_masses = readRDS("../enrichment_utils/all_exact_masses.rds")
+metaspace_databases = readRDS("../enrichment_utils/all_metaspace_databases.rds")
 # metabo_subclasses_univ = readRDS("enrichment_utils/Metabo_subclass_by_metabo_name.rds")
 # metabo_tissue_loc = readRDS("enrichment_utils/Metabo_tissue_location_by_metabo_name.rds")
 # metabo_pathway_univ = readRDS("enrichment_utils/Metabo_reduced_pathways_by_metabo_name.rds")
 # metabo_classes_univ = readRDS("enrichment_utils/Metabo_class_by_metabo_name.rds")
-lion_terms = readRDS("enrichment_utils/LION.rds")
+lion_terms = readRDS("../enrichment_utils/LION.rds")
 
-core_metab = read.delim("enrichment_utils/core_metabolome_v3.csv")
+core_metab = read.delim("../enrichment_utils/core_metabolome_v3.csv")
 bg_sf = read.csv(file.path(enrichment_path, "new_bg_pos.csv"))[,2] %>% unlist() %>% unique()
 bg_name = metaspace_databases$name[which(metaspace_databases$formula %in% 
                                          bg_sf & metaspace_databases$db == "HMDB")] %>% unique()
