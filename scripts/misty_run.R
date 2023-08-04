@@ -9,7 +9,7 @@ library(distances)
 library(ggplot2)
 
 
-plan(multisession, workers=5)
+plan(multisession, workers=2)
 #plan(sequential)
 
 data_folder = '/scratch/trose/pos_lip_formisty/'

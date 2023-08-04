@@ -11,12 +11,14 @@ import math
 import scipy
 from sklearn.metrics.pairwise import pairwise_kernels
 import statsmodels
+import scanpy as sc
 
 import metaspace
 import linex2metaspace as lx2m
 from scipy import stats
 import networkx as nx
 import time
+import matplotlib.pyplot as plt
 
 import multiprocessing as mp
 
@@ -491,7 +493,171 @@ def mark_isobars(tissue_adatas, ppm_threshold=3):
             tissue_adatas[tis][dsid].var['has_isobar'] = has_isobar
     return tissue_adatas
 
+def dict_val_min(in_dict):
+    mean_values = [(key, sum(values) / len(values)) for key, values in in_dict.items()]
 
+    # Sort the list of tuples based on the mean value (second element of the tuple)
+    sorted_keys_by_mean = sorted(mean_values, key=lambda x: x[1])
+
+    # Extract only the keys in the sorted order
+    sorted_keys = [key for key, _ in sorted_keys_by_mean]
+    
+    return sorted_keys[0]
+
+def avg_lipid_ranking(formulas, tissue_networks, alternative_molecule_names, alternative_ids):
+    
+    formula_ranking = {}
+    # Loop over all networks
+    for net in tissue_networks.values():
+        for formula, values in dict(net.nodes(data=True)).items():
+            if formula not in formula_ranking.keys():
+                formula_ranking[formula] = {'ranking': {}, 'candidate':{}}
+            for count, lipid in enumerate(values['sum_species'].index):
+                if lipid not in formula_ranking[formula]['ranking'].keys():
+                    formula_ranking[formula]['ranking'][lipid] = [count]
+                    for candidate in values['parsed_lipids']:
+                        if candidate.sum_species_str() == lipid:
+                            formula_ranking[formula]['candidate'][lipid] = candidate.get_ids()['db_id']
+                else:
+                    formula_ranking[formula]['ranking'][lipid].append(count)
+    
+    # Loop over all formulas and get the best ranked molecule
+    out_list = []
+    out_ids = []
+    for idx, formula in enumerate(formulas):
+        if formula not in formula_ranking.keys():
+            out_list.append(alternative_molecule_names[idx])
+            out_ids.append(alternative_ids[idx][0]) # Just pick first one
+        else:
+            best_lipid = dict_val_min(formula_ranking[formula]['ranking'])
+            out_list.append(best_lipid)
+            out_ids.append(formula_ranking[formula]['candidate'][best_lipid])
+                           
+                           
+        
+
+    return out_list, out_ids
+
+def tissue_modules(coloc_df, tissue, lipid_networks, coloc_object, summary_metric='mean', scaling=False):
+    tissue_df = coloc_df[coloc_df['tissue'] == tissue]
+    # If only working with significant colocs:
+    #tissue_df2 = tissue_df[tissue_df['mediqr_sig']]
+
+    selected_ions = list(set([item for tuple in tissue_df.index for item in tuple]))
+    coloc_matrix = pd.DataFrame(np.zeros(len(selected_ions)*len(selected_ions)).reshape((len(selected_ions), -1)), columns=selected_ions, index=selected_ions)
+    for k1 in coloc_matrix.index:
+        for k2 in coloc_matrix.index:
+            k = (k1, k2)
+            if k in tissue_df.index:
+                coloc_matrix.loc[k[0], k[1]] = tissue_df[summary_metric][k]
+                coloc_matrix.loc[k[1], k[0]] = tissue_df[summary_metric][k]
+    # Simplify naming
+    new_idx = [coloc_object[tissue]['molecule_names'][idx][0][0:30] for idx in coloc_matrix.index]
+    coloc_matrix.index = new_idx
+    coloc_matrix.columns = new_idx
+    better_molecule_names, better_molecule_ids = avg_lipid_ranking(formulas=selected_ions, tissue_networks=lipid_networks[tissue]['nets'], 
+                                                                   alternative_molecule_names=new_idx,
+                                                                   alternative_ids = [coloc_object[tissue]['molecule_ids'][x] for x in selected_ions]
+                                                                  )
+    
+    
+    tmp_df = pd.DataFrame({'formula': selected_ions, 
+                           'molecule': better_molecule_names, 
+                           'all_hmdb': [coloc_object[tissue]['molecule_ids'][x] for x in selected_ions],
+                           'selected_hmdb': better_molecule_ids
+                          }
+                         )
+    
+    ad = AnnData(X=np.array(coloc_matrix), 
+                 obs = tmp_df,
+                 var = tmp_df,
+                 dtype=np.float32)
+    sc.pp.neighbors(ad)
+    sc.tl.umap(ad)
+    sc.tl.leiden(ad)
+                 
+    
+    ax = sc.pl.umap(ad, color='leiden', show=False)
+    
+    for line in range(0,ad.shape[0]):
+        ax.text(ad.obsm['X_umap'][line, 0]+np.random.normal(0, 0.05), 
+                ad.obsm['X_umap'][line, 1]+np.random.normal(0, 0.05), 
+                ad.var['molecule'].values[line], 
+                horizontalalignment='left', size='small', color='black')
+    ax.set_title(tissue)
+    plt.show()
+    return ad
+
+def all_modules(coloc_df, lipid_networks, coloc_object, summary_metric='mean', scaling=False):
+    # If only working with significant colocs:
+    #tissue_df2 = tissue_df[tissue_df['mediqr_sig']]
+
+    selected_ions = list(set([item for tuple in coloc_df.index for item in tuple]))
+    coloc_matrix = pd.DataFrame(np.zeros(len(selected_ions)*len(selected_ions)).reshape((len(selected_ions), -1)), columns=selected_ions, index=selected_ions)
+    for k1 in coloc_matrix.index:
+        for k2 in coloc_matrix.index:
+            k = (k1, k2)
+            if k in coloc_df.index:
+                coloc_matrix.loc[k[0], k[1]] = coloc_df[summary_metric][k]
+                coloc_matrix.loc[k[1], k[0]] = coloc_df[summary_metric][k]
+    
+    # Simplify naming
+    combined_molecule_names = {}
+    for tis in coloc_object.keys():
+        for form, names in coloc_object[tis]['molecule_names'].items():
+            combined_molecule_names[form] = names
+            
+    combined_molecule_ids = {}
+    for tis in coloc_object.keys():
+        for form, names in coloc_object[tis]['molecule_ids'].items():
+            combined_molecule_ids[form] = names
+    
+    new_idx = [combined_molecule_names[idx][0][0:30] for idx in coloc_matrix.index]
+    
+    coloc_matrix.index = new_idx
+    coloc_matrix.columns = new_idx
+    
+    tissue_net_list = [lipid_networks[tis]['nets'] for tis in lipid_networks.keys()]
+    all_tissue_nets = {}
+    for d in tissue_net_list:
+        all_tissue_nets.update(d)
+    
+    better_molecule_names, better_molecule_ids = avg_lipid_ranking(formulas=selected_ions, tissue_networks=all_tissue_nets, 
+                                                                   alternative_molecule_names=new_idx,
+                                                                   alternative_ids = [combined_molecule_ids[x] for x in selected_ions]
+                                                                  )
+    
+    
+    tmp_df = pd.DataFrame({'formula': selected_ions, 
+                           'molecule': better_molecule_names, 
+                           'all_hmdb': [combined_molecule_ids[x] for x in selected_ions],
+                           'selected_hmdb': better_molecule_ids
+                          }
+                         )
+    
+    ad = AnnData(X=np.array(coloc_matrix), 
+                 obs = tmp_df,
+                 var = tmp_df,
+                 dtype=np.float32)
+    sc.pp.neighbors(ad)
+    sc.tl.umap(ad)
+    sc.tl.leiden(ad)
+                 
+    
+    ax = sc.pl.umap(ad, color='leiden', show=False)
+    
+    for line in range(0,ad.shape[0]):
+        ax.text(ad.obsm['X_umap'][line, 0]+np.random.normal(0, 0.05), 
+                ad.obsm['X_umap'][line, 1]+np.random.normal(0, 0.05), 
+                ad.var['molecule'].values[line], 
+                horizontalalignment='left', size='small', color='black')
+    plt.show()
+    return ad
+
+
+def write_cluster_sets(adata, path='unnamed'):
+    for i in set(adata.obs['leiden']):
+        adata.obs[adata.obs['leiden']==i][['formula']].to_csv(path+i+'.csv')
 
 lipid_class_colors = {
     "ACoA": "#ffffff",

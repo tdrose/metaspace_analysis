@@ -20,7 +20,5 @@ Afterwards, the follwing download & analysis scripts/notebooks need to be run.
 5. `scripts/download_images.py` - Download image files for all representative datasets.
 6. `scripts/coloc_pval_poslip.py`, `scripts/coloc_pval_posmet.py`, `scripts/coloc_pval_neglip.py` & `scripts/coloc_pval_negmet.py` - Compute colocalization metrics and p-values.
 7. `datasets_coloc_analysis.ipynb` - Coloc analysis across selected datasets and comparison to prior knowledge.
-
-Not yet integrated:
-
-* `ora_tissues.Rmd` & `ORA_metabo_bootstrap.R` - Requires some help from Bishoy to evaluate usability.
+8. `scripts/enrichment_pos_lip.R` - Perform enrichment analysis for select sets of molecules (metabolic modules).
+9. `datasets_module_analysis.ipynb` - Metabolic module analysis.
