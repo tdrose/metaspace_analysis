@@ -53,5 +53,7 @@ for (enrichment_file in files_for_enrichment){
   
   outfilename = file.path(enrichment_path, paste0('enrichment_result_', enrichment_file))
   
-  write_csv2(result_simple[[1]]$clean_enrich_res, outfilename)
+  write_csv(result_simple[[1]]$clean_enrich_res, outfilename)
 }
+
+write_csv(bmetenrichr:::LION_LUT, file.path(enrichment_path, 'LION_ontology_translator.csv'))
