@@ -507,19 +507,20 @@ def dict_val_min(in_dict):
 def avg_lipid_ranking(formulas, tissue_networks, alternative_molecule_names, alternative_ids):
     
     formula_ranking = {}
-    # Loop over all networks
-    for net in tissue_networks.values():
-        for formula, values in dict(net.nodes(data=True)).items():
-            if formula not in formula_ranking.keys():
-                formula_ranking[formula] = {'ranking': {}, 'candidate':{}}
-            for count, lipid in enumerate(values['sum_species'].index):
-                if lipid not in formula_ranking[formula]['ranking'].keys():
-                    formula_ranking[formula]['ranking'][lipid] = [count]
-                    for candidate in values['parsed_lipids']:
-                        if candidate.sum_species_str() == lipid:
-                            formula_ranking[formula]['candidate'][lipid] = candidate.get_ids()['db_id']
-                else:
-                    formula_ranking[formula]['ranking'][lipid].append(count)
+    if tissue_networks is not None:
+        # Loop over all networks
+        for net in tissue_networks.values():
+            for formula, values in dict(net.nodes(data=True)).items():
+                if formula not in formula_ranking.keys():
+                    formula_ranking[formula] = {'ranking': {}, 'candidate':{}}
+                for count, lipid in enumerate(values['sum_species'].index):
+                    if lipid not in formula_ranking[formula]['ranking'].keys():
+                        formula_ranking[formula]['ranking'][lipid] = [count]
+                        for candidate in values['parsed_lipids']:
+                            if candidate.sum_species_str() == lipid:
+                                formula_ranking[formula]['candidate'][lipid] = candidate.get_ids()['db_id']
+                    else:
+                        formula_ranking[formula]['ranking'][lipid].append(count)
     
     # Loop over all formulas and get the best ranked molecule
     out_list = []
@@ -555,7 +556,11 @@ def tissue_modules(coloc_df, tissue, lipid_networks, coloc_object, summary_metri
     new_idx = [coloc_object[tissue]['molecule_names'][idx][0][0:30] for idx in coloc_matrix.index]
     coloc_matrix.index = new_idx
     coloc_matrix.columns = new_idx
-    better_molecule_names, better_molecule_ids = avg_lipid_ranking(formulas=selected_ions, tissue_networks=lipid_networks[tissue]['nets'], 
+    if lipid_networks is None:
+        tis_net = None
+    else:
+        tis_net = lipid_networks[tissue]['nets']
+    better_molecule_names, better_molecule_ids = avg_lipid_ranking(formulas=selected_ions, tissue_networks=tis_net, 
                                                                    alternative_molecule_names=new_idx,
                                                                    alternative_ids = [coloc_object[tissue]['molecule_ids'][x] for x in selected_ions]
                                                                   )
@@ -617,10 +622,13 @@ def all_modules(coloc_df, lipid_networks, coloc_object, summary_metric='mean', s
     coloc_matrix.index = new_idx
     coloc_matrix.columns = new_idx
     
-    tissue_net_list = [lipid_networks[tis]['nets'] for tis in lipid_networks.keys()]
-    all_tissue_nets = {}
-    for d in tissue_net_list:
-        all_tissue_nets.update(d)
+    if lipid_networks is None:
+        all_tissue_nets = None
+    else:
+        tissue_net_list = [lipid_networks[tis]['nets'] for tis in lipid_networks.keys()]
+        all_tissue_nets = {}
+        for d in tissue_net_list:
+            all_tissue_nets.update(d)
     
     better_molecule_names, better_molecule_ids = avg_lipid_ranking(formulas=selected_ions, tissue_networks=all_tissue_nets, 
                                                                    alternative_molecule_names=new_idx,
@@ -658,6 +666,110 @@ def all_modules(coloc_df, lipid_networks, coloc_object, summary_metric='mean', s
 def write_cluster_sets(adata, path='unnamed'):
     for i in set(adata.obs['leiden']):
         adata.obs[adata.obs['leiden']==i][['formula']].to_csv(path+i+'.csv')
+        
+def get_ad_molecule_matrices(adata):
+    # Molecule df summed over all adducts for the same formula
+    molecule_df = pd.DataFrame(adata.X.transpose()).assign(formula=adata.var['formula'].reset_index(drop=True)).groupby('formula').sum()
+    molecule_list = list(molecule_df.index)
+    molecule_matrix = molecule_df.to_numpy().reshape((molecule_df.shape[0], adata.obs['y'].max()+1, -1))
+    # print(molecule_matrix.shape)
+    return {'molecule_list': molecule_list, 'molecule_images': molecule_matrix}
+
+def tissue_mol_mat(adata_dict):
+    return {key: get_ad_molecule_matrices(val) for key, val in adata_dict.items()}
+
+def get_cluster_images(molecule_dict, cluster_assignment):
+    out_dict = {}
+    for cluster in set(cluster_assignment):
+        molecules_in_cluster = cluster_assignment[cluster_assignment==cluster].index
+        cluster_mask = [x in molecules_in_cluster for x in molecule_dict['molecule_list']]
+        
+        number_of_molecules = sum(cluster_mask)
+        if number_of_molecules > 0:
+            
+            out_dict[int(cluster)] = {'number_of_molecules': number_of_molecules, 
+                                      'mean_ion_image': molecule_dict['molecule_images'][cluster_mask].mean(0)}
+        else:
+            out_dict[int(cluster)] = {'number_of_molecules': number_of_molecules, 
+                                      'mean_ion_image': np.array([])}
+            
+    return out_dict
+
+
+def display_cluster_ion_images(cluster_assignment, adatas, adata_selection):
+    tmm = tissue_mol_mat(adatas)
+    ds_list = []
+    for dsid in adata_selection:
+        ds_list.append(get_cluster_images(tmm[dsid], cluster_assignment))
+    
+    n_clusters = max([max(v.keys()) for v in ds_list]) + 1
+    fig, axs = plt.subplots(len(adata_selection), n_clusters)
+    for ds in range(len(ds_list)):
+        for cl in range(n_clusters):
+            axs[ds][cl].axis('off')
+            if ds_list[ds][cl]['number_of_molecules'] > 0:
+                axs[ds][cl].imshow(ds_list[ds][cl]['mean_ion_image'])
+                nm = ds_list[ds][cl]['number_of_molecules']
+                
+                #axs[ds][cl].set_title(f'Number of molecules: {nm}')
+    plt.show()
+
+def get_lipidclass_assignment(lipid_class_list, molmat, ds_lipidnetwork):
+    assignment_list = []
+    node_data = dict(ds_lipidnetwork.nodes(data=True))
+    for mol in molmat['molecule_list']:
+        if mol in node_data.keys():
+            curr_class = lx2.lipid_parser(node_data[mol]['sum_species'].index[0], reference_lipids=ref_lip_dict).get_lipid_class()
+            if curr_class in lipid_class_list:
+                assignment_list.append(lipid_class_list.index(curr_class))
+            else:
+                assignment_list.append(-100)
+        else:
+            # We are only interested in binary comparisons here this will be ignored
+            assignment_list.append(-100)
+        
+    return pd.Series(assignment_list, index=molmat['molecule_list'])
+
+
+def display_lipidclass_ion_images(lipid_class_list, 
+                                  adatas_tissue0, adatas_tissue1, 
+                                  selection_tissue0, selection_tissue1,
+                                  lx_tissue0, lx_tissue1
+                                 ):
+    tmm0 = tissue_mol_mat(adatas_tissue0)
+    tmm1 = tissue_mol_mat(adatas_tissue1)
+    ds_list0 = [get_cluster_images(tmm0[dsid], 
+                                   get_lipidclass_assignment(lipid_class_list, 
+                                                             tmm0[dsid], 
+                                                             lx_tissue0[dsid])) for dsid in selection_tissue0]
+    ds_list1 = [get_cluster_images(tmm1[dsid], 
+                                   get_lipidclass_assignment(lipid_class_list, 
+                                                             tmm1[dsid], 
+                                                             lx_tissue1[dsid])) for dsid in selection_tissue1]
+    
+    
+    n_clusters = max([max(v.keys()) for v in ds_list0] + [max(v.keys()) for v in ds_list1]) + 1
+    fig, axs = plt.subplots(len(selection_tissue0), n_clusters)
+    for ds in range(len(ds_list0)):
+        for cl in range(n_clusters):
+            axs[ds][cl].axis('off')
+            if cl in ds_list0[ds].keys():
+                if ds_list0[ds][cl]['number_of_molecules'] > 0:
+                    axs[ds][cl].imshow(ds_list0[ds][cl]['mean_ion_image'])
+                    lc = lipid_class_list[cl]
+                    axs[ds][cl].set_title(f'Lipid class: {lc}')
+    plt.show()
+    
+    fig, axs = plt.subplots(len(selection_tissue1), n_clusters)
+    for ds in range(len(ds_list1)):
+        for cl in range(n_clusters):
+            axs[ds][cl].axis('off')
+            if cl in ds_list1[ds].keys():
+                if ds_list1[ds][cl]['number_of_molecules'] > 0:
+                    axs[ds][cl].imshow(ds_list1[ds][cl]['mean_ion_image'])
+                    lc = lipid_class_list[cl]
+                    axs[ds][cl].set_title(f'Lipid class: {lc}')
+    plt.show()
 
 lipid_class_colors = {
     "ACoA": "#ffffff",

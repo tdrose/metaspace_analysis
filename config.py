@@ -1,13 +1,12 @@
 import os
 import json
 
-# Key for the current analysis set. 
-# Should be the date on which all datasets are downloaded on which the analysis is then performed.
-date_key = '230201'
-
 # Base folder where datasets will be downloaded to and results stored.
 data_dir = '/g/alexandr/tim/metaspace_evaluation/'
 
+# Key for the current analysis set. 
+# Should be the date on which all datasets are downloaded on which the analysis is then performed.
+date_key = '230201'
 
 # Folder for storing results
 store_dir = os.path.join(data_dir, date_key)
@@ -25,7 +24,8 @@ module_key = 'module_analysis'
 module_dir = os.path.join(store_dir, module_key)
 if module_key not in os.listdir(store_dir):
     os.mkdir(module_dir)
-    
+
+# For R scripts to have access to the data directories
 analysis_config_dict = {'date_key': date_key,
                         'data_dir': data_dir, 
                         'store_dir': store_dir, 
