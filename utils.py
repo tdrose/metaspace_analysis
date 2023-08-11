@@ -9,7 +9,6 @@ from scipy import ndimage
 import math
 
 
-
 def make_metadata_dict(dss, results_dict, only_results=False):
     
     metadata_dict = {'Organism': {}, 
