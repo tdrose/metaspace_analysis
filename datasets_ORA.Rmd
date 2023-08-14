@@ -24,7 +24,8 @@ enrichment_path = analysis_config$enrichment_dir
 ```{r}
 metabo_exact_masses = readRDS("enrichment_utils/all_exact_masses.rds")
 metaspace_databases = readRDS("enrichment_utils/all_metaspace_databases.rds")
-# metabo_subclasses_univ = readRDS("enrichment_utils/Metabo_subclass_by_metabo_name.rds")
+metabo_classes_univ = readRDS("enrichment_utils/Metabo_class_by_metabo_name.rds")
+metabo_subclasses_univ = readRDS("enrichment_utils/Metabo_subclass_by_metabo_name.rds")
 # metabo_tissue_loc = readRDS("enrichment_utils/Metabo_tissue_location_by_metabo_name.rds")
 # metabo_pathway_univ = readRDS("enrichment_utils/Metabo_reduced_pathways_by_metabo_name.rds")
 # metabo_classes_univ = readRDS("enrichment_utils/Metabo_class_by_metabo_name.rds")
@@ -52,6 +53,8 @@ cat( paste0(sum(query_sf %in% bg_sf), ' of ', length(query_sf), ' query molecule
 ```
 
 ## w/ bootstrap
+
+### LION
 ```{r}
 result_simple = bmetenrichr:::Run_bootstrap_ORA(marker_list=query_sf, 
                                                 background=lion_terms, 
@@ -71,6 +74,54 @@ tibble(result_simple[[1]]$clean_enrich_res) %>%
   filter(q.value_median<=0.1) %>%
   select(name, q.value_median, everything())
 ```
+
+
+
+### HMDB subclass
+```{r}
+result_simple = bmetenrichr:::Run_bootstrap_ORA(marker_list=query_sf, 
+                                                background=metabo_subclasses_univ, 
+                                                custom_universe = bg_sf,
+                                                alpha_cutoff = 0.2, min_intersection = 2,
+                                                consider_isobars = T, polarization_mode = NA, 
+                                                mass_range_ppm = 3,
+                                                only_HMDB = T, annot_weights = NULL,
+                                                n_bootstraps = 2, sample_core_metab_only = F,
+                                                boot_fract_cutoff = 0.5, q.val_cutoff = 0.2,
+                                                selected_terms = NULL)
+```
+
+Results
+```{r}
+tibble(result_simple[[1]]$clean_enrich_res) %>%
+  left_join(bmetenrichr:::LION_LUT, by=c('term'='ID')) %>%
+  filter(q.value_median<=0.1) %>%
+  select(name, q.value_median, everything())
+```
+
+### HMDB class
+```{r}
+result_simple = bmetenrichr:::Run_bootstrap_ORA(marker_list=query_sf, 
+                                                background=metabo_classes_univ, 
+                                                custom_universe = bg_sf,
+                                                alpha_cutoff = 0.3, min_intersection = 2,
+                                                consider_isobars = T, polarization_mode = NA, 
+                                                mass_range_ppm = 3,
+                                                only_HMDB = T, annot_weights = NULL,
+                                                n_bootstraps = 2, sample_core_metab_only = F,
+                                                boot_fract_cutoff = 0.5, q.val_cutoff = 0.3,
+                                                selected_terms = NULL)
+```
+
+Results
+```{r}
+tibble(result_simple[[1]]$clean_enrich_res) %>%
+  left_join(bmetenrichr:::LION_LUT, by=c('term'='ID')) %>%
+  filter(q.value_median<=0.1) %>%
+  select(name, q.value_median, everything())
+```
+
+
 
 # Enrichment for all scenarios
 ```{r}
