@@ -771,6 +771,12 @@ def display_lipidclass_ion_images(lipid_class_list,
                     axs[ds][cl].set_title(f'Lipid class: {lc}')
     plt.show()
 
+    
+    
+    
+    
+    
+
 lipid_class_colors = {
     "ACoA": "#ffffff",
     "ACar": "#ffffff",
