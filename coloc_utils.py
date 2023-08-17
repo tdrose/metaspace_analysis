@@ -557,7 +557,7 @@ def tissue_modules(coloc_df, tissue, lipid_networks, coloc_object, summary_metri
     coloc_matrix = pd.DataFrame(np.zeros(len(selected_ions)*len(selected_ions)).reshape((len(selected_ions), -1)), columns=selected_ions, index=selected_ions)
     for k1 in coloc_matrix.index:
         for k2 in coloc_matrix.index:
-            k = (k1, k2)
+            k = tuple(sorted((k1, k2)))
             if k in tissue_df.index:
                 coloc_matrix.loc[k[0], k[1]] = tissue_df[summary_metric][k]
                 coloc_matrix.loc[k[1], k[0]] = tissue_df[summary_metric][k]
@@ -611,7 +611,7 @@ def all_modules(coloc_df, lipid_networks, coloc_object, summary_metric='mean', s
     coloc_matrix = pd.DataFrame(np.zeros(len(selected_ions)*len(selected_ions)).reshape((len(selected_ions), -1)), columns=selected_ions, index=selected_ions)
     for k1 in coloc_matrix.index:
         for k2 in coloc_matrix.index:
-            k = (k1, k2)
+            k = tuple(sorted((k1, k2)))
             if k in coloc_df.index:
                 coloc_matrix.loc[k[0], k[1]] = coloc_df[summary_metric][k]
                 coloc_matrix.loc[k[1], k[0]] = coloc_df[summary_metric][k]
