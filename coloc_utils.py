@@ -25,6 +25,7 @@ import multiprocessing as mp
 import utils
 from config import store_dir, data_dir, date_key, enrichment_dir
 
+
 def load_tissue_datasets(ds_list: pd.Series, include_offsample: bool=False, fdr: float=0.1, path=os.path.join(store_dir, 'all_ionimages/')) -> Dict[str, AnnData]:
     out_ads = {}
     for ds in ds_list:
@@ -36,6 +37,7 @@ def load_tissue_datasets(ds_list: pd.Series, include_offsample: bool=False, fdr:
             del out_ads[ds]
     return out_ads
 
+
 def load_alltissue_datasets(tissue_ds_dict: Dict[str, pd.Series], include_offsample: bool=False, 
                             fdr: float=0.1, path=os.path.join(store_dir, 'all_ionimages/')) -> Dict[str, Dict[str, AnnData]]:
     out_dict = {}
@@ -43,6 +45,7 @@ def load_alltissue_datasets(tissue_ds_dict: Dict[str, pd.Series], include_offsam
         out_dict[k] = load_tissue_datasets(v.index, include_offsample=include_offsample, fdr=fdr, path=path)
     
     return out_dict
+
 
 def compute_colocs(ads: Dict[str, AnnData]) -> Tuple[Dict[str, pd.DataFrame], Dict[str, List]]:
     
@@ -89,6 +92,7 @@ def compute_colocs(ads: Dict[str, AnnData]) -> Tuple[Dict[str, pd.DataFrame], Di
         coloc_dict[dsid] = coloc_df
         
     return coloc_dict, molecule_names, molecule_ids
+
 
 def compute_colocs_shuffle(ads: Dict[str, AnnData]) -> Tuple[Dict[str, pd.DataFrame], Dict[str, List]]:
     
@@ -184,6 +188,7 @@ def coloc_measures(ii_dict: Dict[Tuple[str, str], List[float]],
                          'mediqr': mediqr_l
                         }).set_index('ion_pairs', drop=False)
 
+
 def compute_lx_nets(coloc_dict: Dict[str, pd.DataFrame], molecule_names: Dict[str, List], molecule_ids, ref_lip_dict, class_reacs, bootstraps: int=30, tissue = None):
     lx_nets = {}
     lx_annotations = {}
@@ -259,6 +264,7 @@ def tissue_lx_nets_mp(tissue_colocs: Dict[str, pd.DataFrame], ref_lip_dict, clas
     
     return out_dict
 
+
 def catch_sp(g, source, target):
     try:
         return nx.shortest_path_length(g, source, target)
@@ -297,6 +303,7 @@ def coloc_worker(items, min_dataset_fraction, shuffle):
     
     return (tissue, out_dict)
 
+
 def all_tissue_colocs_mp(tissue_adatas: Dict[str, Dict[str, AnnData]], min_dataset_fraction: int=0.3, shuffle: bool=False, threads: int=4):
     
     pool = mp.Pool(threads)
@@ -313,6 +320,7 @@ def all_tissue_colocs_mp(tissue_adatas: Dict[str, Dict[str, AnnData]], min_datas
         out[tmp[0]] = tmp[1]
         
     return out
+
 
 def flatten(l):
     return [item for subl in l for item in subl]
@@ -460,6 +468,7 @@ def coloc_sampling_worker(items, min_dataset_fraction, save_coloc_dict):
     
     return (tissue, out_dict)
 
+
 def all_tissue_coloc_sampling_mp(tissue_colocs, min_dataset_fraction=0.3, threads: int=4, save_coloc_dict=False):
     
     pool = mp.Pool(threads)
@@ -493,6 +502,7 @@ def mark_isobars(tissue_adatas, ppm_threshold=3):
             tissue_adatas[tis][dsid].var['has_isobar'] = has_isobar
     return tissue_adatas
 
+
 def dict_val_min(in_dict):
     mean_values = [(key, sum(values) / len(values)) for key, values in in_dict.items()]
 
@@ -503,6 +513,7 @@ def dict_val_min(in_dict):
     sorted_keys = [key for key, _ in sorted_keys_by_mean]
     
     return sorted_keys[0]
+
 
 def avg_lipid_ranking(formulas, tissue_networks, alternative_molecule_names, alternative_ids):
     
@@ -534,10 +545,8 @@ def avg_lipid_ranking(formulas, tissue_networks, alternative_molecule_names, alt
             out_list.append(best_lipid)
             out_ids.append(formula_ranking[formula]['candidate'][best_lipid])
                            
-                           
-        
-
     return out_list, out_ids
+
 
 def tissue_modules(coloc_df, tissue, lipid_networks, coloc_object, summary_metric='mean', scaling=False):
     tissue_df = coloc_df[coloc_df['tissue'] == tissue]
@@ -592,6 +601,7 @@ def tissue_modules(coloc_df, tissue, lipid_networks, coloc_object, summary_metri
     ax.set_title(tissue)
     plt.show()
     return ad
+
 
 def all_modules(coloc_df, lipid_networks, coloc_object, summary_metric='mean', scaling=False):
     # If only working with significant colocs:
@@ -666,6 +676,7 @@ def all_modules(coloc_df, lipid_networks, coloc_object, summary_metric='mean', s
 def write_cluster_sets(adata, path='unnamed'):
     for i in set(adata.obs['leiden']):
         adata.obs[adata.obs['leiden']==i][['formula']].to_csv(path+i+'.csv')
+
         
 def get_ad_molecule_matrices(adata):
     # Molecule df summed over all adducts for the same formula
@@ -675,8 +686,10 @@ def get_ad_molecule_matrices(adata):
     # print(molecule_matrix.shape)
     return {'molecule_list': molecule_list, 'molecule_images': molecule_matrix}
 
+
 def tissue_mol_mat(adata_dict):
     return {key: get_ad_molecule_matrices(val) for key, val in adata_dict.items()}
+
 
 def get_cluster_images(molecule_dict, cluster_assignment):
     out_dict = {}
@@ -714,6 +727,7 @@ def display_cluster_ion_images(cluster_assignment, adatas, adata_selection):
                 #axs[ds][cl].set_title(f'Number of molecules: {nm}')
     plt.show()
 
+    
 def get_lipidclass_assignment(lipid_class_list, molmat, ds_lipidnetwork):
     assignment_list = []
     node_data = dict(ds_lipidnetwork.nodes(data=True))
