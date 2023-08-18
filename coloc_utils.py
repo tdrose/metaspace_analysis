@@ -19,6 +19,7 @@ from scipy import stats
 import networkx as nx
 import time
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 import multiprocessing as mp
 
@@ -786,7 +787,42 @@ def display_lipidclass_ion_images(lipid_class_list,
     plt.show()
 
     
+def load_enrichment(template_file, tissue, ontologies, lion_terms=None):
+    # Get all files
+    all_files = os.listdir(enrichment_dir)
     
+    cluster_dict = {}
+    # match files based on cluster
+    for file in all_files:
+        
+        # If the file belongs to one of the ontologies
+        matched_temp = [file.startswith(template_file.format(x, tissue)) for x in ontologies]
+        if any(matched_temp):
+            matched_ont =np.array(ontologies)[matched_temp][0]
+            clusterid = int(file.split(tissue)[1].split('.')[0])
+            
+            if clusterid not in cluster_dict.keys():
+                cluster_dict[clusterid] = []
+            
+            # Read table
+            tab = pd.read_csv(os.path.join(enrichment_dir, file)).assign(ontology=matched_ont)
+            
+            if 'LION' in file:
+                tab = tab.set_index('term').join(lion_terms.set_index('ID'), how='left').reset_index(drop=True).rename(columns={'name': 'term'})
+            
+            cluster_dict[clusterid].append(tab)
+    
+    # merge tables
+    return {key: pd.concat(val) for key, val in cluster_dict.items()}
+
+def plot_enrichment(tab, cluster, max_elem):
+    tab2 = tab.sort_values('ES_median')
+    tab2['-log10(q-value)'] = -np.log10(tab2['q.value_median'])
+    fig, ax = plt.subplots(1)
+    sns.barplot(data=tab2, x='ES_median', y='term', hue='ontology', dodge=False, ax=ax, width=0.1)
+    sns.scatterplot(data=tab2, x='ES_median', y='term', hue='-log10(q-value)', size='-log10(q-value)', ax=ax, sizes=(40, 400))
+    ax.set_ylim((-1, max_elem))
+    ax.set_title(f'Cluster: {cluster}') 
     
     
     
