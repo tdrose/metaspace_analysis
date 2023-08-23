@@ -47,6 +47,8 @@ def make_metadata_dict(dss, results_dict, only_results=False):
             metadata_dict['Condition'][d.id] = d.metadata['Sample_Information']['Condition'].strip()
             metadata_dict['Organism_Part'][d.id] = d.metadata['Sample_Information']['Organism_Part'].strip()
             metadata_dict['Polarity'][d.id] = d.metadata['MS_Analysis']['Polarity'].strip()
+            metadata_dict['Analyzer'][d.id] = d.metadata['MS_Analysis']['Analyzer'].strip()
+            metadata_dict['Ionisation_Source'][d.id] = d.metadata['MS_Analysis']['Ionisation_Source'].strip()
             metadata_dict['maldi_matrix'][d.id] = d.metadata['Sample_Preparation']['MALDI_Matrix']
 
             if d.group is None:
