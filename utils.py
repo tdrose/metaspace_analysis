@@ -95,14 +95,22 @@ def clean_metadata_table(mdt, path='./metadata_mapping/'):
 def flatten(l):
     return [item for sublist in l for item in sublist]
 
-def top_feature_col(in_col: pd.Series, top: int=20, other_key: str='Other'):
+def top_feature_col(in_col: pd.Series, top: int=20, other_key: str='Other', exclusion_list: list=None):
     tmp = pd.value_counts(in_col)
+    # print(tmp[:15])
+    top_list = list(tmp.index)
+    if exclusion_list is None:
+        exclusion_list = []
+    
     replace_dict = {}
+    # print(tmp[:15])
     for i in range(len(tmp)):
-        if i < top:
-            replace_dict[tmp.index[i]] = tmp.index[i]
+        if i < top and top_list[i] not in exclusion_list:
+            replace_dict[top_list[i]] = top_list[i]
         else:
-            replace_dict[tmp.index[i]] = other_key
+            replace_dict[top_list[i]] = other_key
+            if top_list[i] in exclusion_list:
+                top += 1
     return in_col.replace(to_replace=replace_dict)
 
 
