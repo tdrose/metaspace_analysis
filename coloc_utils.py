@@ -504,6 +504,34 @@ def mark_isobars(tissue_adatas, ppm_threshold=3):
     return tissue_adatas
 
 
+def remove_isobars_resultstab(results_tabs):
+    
+    for dsid, tab in results_tabs.items():
+        results_tabs[dsid] = tab[~tab['has_isobar']]
+        
+    return results_tabs
+
+
+def mark_isobars_resultstab(results_tabs, ppm_threshold=3, remove=True):
+    
+    for dsid, tab in tqdm(results_tabs.items()):
+        has_isobar = pd.Series(False, index=tab.index)
+
+        for idx, val in enumerate(tab['mz'].values):
+            tmp = abs((val-tab['mz'])/val)*1e6 < ppm_threshold
+            tmp[idx] = False
+            has_isobar = has_isobar | tmp
+            
+        results_tabs[dsid]['has_isobar'] = has_isobar
+    
+    if remove:
+        return remove_isobars_resultstab(results_tabs)
+    
+    return results_tabs
+
+
+
+
 def dict_val_min(in_dict):
     mean_values = [(key, sum(values) / len(values)) for key, values in in_dict.items()]
 
