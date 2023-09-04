@@ -720,7 +720,7 @@ def tissue_mol_mat(adata_dict):
     return {key: get_ad_molecule_matrices(val) for key, val in adata_dict.items()}
 
 
-def get_cluster_images(molecule_dict, cluster_assignment):
+def get_cluster_images(molecule_dict, cluster_assignment, q=50):
     out_dict = {}
     for cluster in set(cluster_assignment):
         molecules_in_cluster = cluster_assignment[cluster_assignment==cluster].index
@@ -728,9 +728,8 @@ def get_cluster_images(molecule_dict, cluster_assignment):
         
         number_of_molecules = sum(cluster_mask)
         if number_of_molecules > 0:
-            
             out_dict[int(cluster)] = {'number_of_molecules': number_of_molecules, 
-                                      'mean_ion_image': molecule_dict['molecule_images'][cluster_mask].mean(0)}
+                                      'mean_ion_image': np.percentile(molecule_dict['molecule_images'][cluster_mask], q=q, axis=0)}
         else:
             out_dict[int(cluster)] = {'number_of_molecules': number_of_molecules, 
                                       'mean_ion_image': np.array([])}
@@ -738,11 +737,11 @@ def get_cluster_images(molecule_dict, cluster_assignment):
     return out_dict
 
 
-def display_cluster_ion_images(cluster_assignment, adatas, adata_selection):
+def display_cluster_ion_images(cluster_assignment, adatas, adata_selection, q=50):
     tmm = tissue_mol_mat(adatas)
     ds_list = []
     for dsid in adata_selection:
-        ds_list.append(get_cluster_images(tmm[dsid], cluster_assignment))
+        ds_list.append(get_cluster_images(tmm[dsid], cluster_assignment, q=q))
     
     n_clusters = max([max(v.keys()) for v in ds_list]) + 1
     fig, axs = plt.subplots(len(adata_selection), n_clusters)
@@ -843,10 +842,11 @@ def load_enrichment(template_file, tissue, ontologies, lion_terms=None):
     # merge tables
     return {key: pd.concat(val) for key, val in cluster_dict.items()}
 
-def plot_enrichment(tab, cluster, max_elem):
+def plot_enrichment(tab, cluster, max_elem, ax=None):
     tab2 = tab.sort_values('ES_median')
     tab2['-log10(q-value)'] = -np.log10(tab2['q.value_median'])
-    fig, ax = plt.subplots(1)
+    if ax is None:
+        fig, ax = plt.subplots(1)
     sns.barplot(data=tab2, x='ES_median', y='term', hue='ontology', dodge=False, ax=ax, width=0.1)
     sns.scatterplot(data=tab2, x='ES_median', y='term', hue='-log10(q-value)', size='-log10(q-value)', ax=ax, sizes=(40, 400))
     ax.set_ylim((-1, max_elem))
