@@ -9,7 +9,7 @@ from scipy import ndimage
 import math
 
 
-def make_metadata_dict(dss, results_dict, only_results=False):
+def make_metadata_dict(dss, results_dict, only_results=False, fdrcutoff=0.1):
     
     metadata_dict = {'Organism': {}, 
                      'Condition': {}, 
@@ -38,10 +38,14 @@ def make_metadata_dict(dss, results_dict, only_results=False):
                     metadata_dict['Group'][d.id] = "not available"
                 else:
                     metadata_dict['Group'][d.id] = d.group['shortName'].strip()
-
-                metadata_dict['mzmin'][d.id] = results_dict[d.id]['mz'].min()
-                metadata_dict['mzmax'][d.id] = results_dict[d.id]['mz'].max()
-                
+                    
+                tmp = results_dict[d.id][results_dict[d.id]['fdr'] <= fdrcutoff]
+                if tmp.shape[0] > 0:
+                    metadata_dict['mzmin'][d.id] = tmp['mz'].min()
+                    metadata_dict['mzmax'][d.id] = tmp['mz'].max()
+                else:
+                    metadata_dict['mzmin'][d.id] = np.nan
+                    metadata_dict['mzmax'][d.id] = np.nan
         else:
             metadata_dict['Organism'][d.id] = d.metadata['Sample_Information']['Organism'].strip()
             metadata_dict['Condition'][d.id] = d.metadata['Sample_Information']['Condition'].strip()
@@ -57,8 +61,13 @@ def make_metadata_dict(dss, results_dict, only_results=False):
                 metadata_dict['Group'][d.id] = d.group['shortName'].strip()
 
             if d.id in results_dict.keys():
-                metadata_dict['mzmin'][d.id] = results_dict[d.id]['mz'].min()
-                metadata_dict['mzmax'][d.id] = results_dict[d.id]['mz'].max()
+                tmp = results_dict[d.id][results_dict[d.id]['fdr'] <= fdrcutoff]
+                if tmp.shape[0] > 0:
+                    metadata_dict['mzmin'][d.id] = tmp['mz'].min()
+                    metadata_dict['mzmax'][d.id] = tmp['mz'].max()
+                else:
+                    metadata_dict['mzmin'][d.id] = np.nan
+                    metadata_dict['mzmax'][d.id] = np.nan
             else:
                 metadata_dict['mzmin'][d.id] = np.nan
                 metadata_dict['mzmax'][d.id] = np.nan
