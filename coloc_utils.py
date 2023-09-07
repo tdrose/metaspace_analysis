@@ -737,20 +737,31 @@ def get_cluster_images(molecule_dict, cluster_assignment, q=50):
     return out_dict
 
 
-def display_cluster_ion_images(cluster_assignment, adatas, adata_selection, q=50):
+def display_cluster_ion_images(cluster_assignment, adatas, adata_selection, q=50, fig=None, transpose=None):
     tmm = tissue_mol_mat(adatas)
     ds_list = []
     for dsid in adata_selection:
         ds_list.append(get_cluster_images(tmm[dsid], cluster_assignment, q=q))
     
     n_clusters = max([max(v.keys()) for v in ds_list]) + 1
-    fig, axs = plt.subplots(len(adata_selection), n_clusters)
+    if fig is None:
+        fig, axs = plt.subplots(len(adata_selection), n_clusters)
+    else:
+        axs = fig.subplots(len(adata_selection), n_clusters)
     for ds in range(len(ds_list)):
         for cl in range(n_clusters):
             axs[ds][cl].axis('off')
             if ds_list[ds][cl]['number_of_molecules'] > 0:
-                axs[ds][cl].imshow(ds_list[ds][cl]['mean_ion_image'])
+                if transpose is None:
+                    axs[ds][cl].imshow(ds_list[ds][cl]['mean_ion_image'], cmap='viridis')
+                else:
+                    if transpose[ds]:
+                        axs[ds][cl].imshow(ds_list[ds][cl]['mean_ion_image'].transpose(), cmap='viridis')
+                    else:
+                        axs[ds][cl].imshow(ds_list[ds][cl]['mean_ion_image'], cmap='viridis')
                 nm = ds_list[ds][cl]['number_of_molecules']
+            if ds == 0:
+                axs[ds][cl].set_title(f'Cluster {cl}')
                 
                 #axs[ds][cl].set_title(f'Number of molecules: {nm}')
     plt.show()
@@ -842,15 +853,34 @@ def load_enrichment(template_file, tissue, ontologies, lion_terms=None):
     # merge tables
     return {key: pd.concat(val) for key, val in cluster_dict.items()}
 
-def plot_enrichment(tab, cluster, max_elem, ax=None):
+def plot_enrichment(tab, cluster, max_elem, ax=None, axisfont=5, textfont=4):
     tab2 = tab.sort_values('ES_median')
     tab2['-log10(q-value)'] = -np.log10(tab2['q.value_median'])
     if ax is None:
         fig, ax = plt.subplots(1)
-    sns.barplot(data=tab2, x='ES_median', y='term', hue='ontology', dodge=False, ax=ax, width=0.1)
-    sns.scatterplot(data=tab2, x='ES_median', y='term', hue='-log10(q-value)', size='-log10(q-value)', ax=ax, sizes=(40, 400))
+    sns.barplot(data=tab2, x='ES_median', y='term', hue='ontology', dodge=False, ax=ax, width=.5)
+    #sns.scatterplot(data=tab2, y='ES_median', x='term', hue='-log10(q-value)', size='-log10(q-value)', ax=ax, sizes=(40, 300))
     ax.set_ylim((-1, max_elem))
-    ax.set_title(f'Cluster: {cluster}') 
+    ax.set_xlim((0, tab2['ES_median'].max()*2.5))
+    ax.set_title(f'Cluster: {cluster}')
+    
+    sns.despine(offset=5, trim=False, ax=ax)
+    ticks = ax.get_yticklabels()
+
+    # for each tick write the value at the right position    
+    for tick in ticks:
+        term = tick.get_text()
+        yval = tick.get_position()[1]
+        # x position
+        xval = tab2.set_index('term')['ES_median'][term]
+        ax.text(xval, 
+                yval, 
+                term, 
+                horizontalalignment='left', size=textfont, color='black', va='center')
+    
+    ax.set_yticklabels([])
+    ax.get_yaxis().set_visible(False)
+    
     
     
     
