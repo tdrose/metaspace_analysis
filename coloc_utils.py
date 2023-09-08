@@ -728,8 +728,21 @@ def get_cluster_images(molecule_dict, cluster_assignment, q=50):
         
         number_of_molecules = sum(cluster_mask)
         if number_of_molecules > 0:
+            
+            # Using percentile
+            selected_images = molecule_dict['molecule_images'][cluster_mask]
+            
+            # Hotspot clipping
+            hotspots = np.percentile(selected_images, q=99, axis=(1,2))
+            for i in range(len(hotspots)):
+                selected_images[i][selected_images[i] > hotspots[i]] = hotspots[i]
+            
+            percentile_image = np.percentile(selected_images, q=q, axis=0)
+            
+            centroid_image = selected_images[np.argmax(np.square((selected_images-percentile_image)).sum(axis=(1,2)))]
+            
             out_dict[int(cluster)] = {'number_of_molecules': number_of_molecules, 
-                                      'mean_ion_image': np.percentile(molecule_dict['molecule_images'][cluster_mask], q=q, axis=0)}
+                                      'mean_ion_image': percentile_image}
         else:
             out_dict[int(cluster)] = {'number_of_molecules': number_of_molecules, 
                                       'mean_ion_image': np.array([])}
