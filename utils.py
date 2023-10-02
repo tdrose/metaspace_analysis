@@ -188,10 +188,11 @@ def make_molecule_anndata(results, mdt, fdr_cutoff=0.5, only_onSample=False):
     
     print(len(mol_features), ' features')
     
-    mol_data = pd.DataFrame(0, columns=list(set(mol_features)), index=results.keys(), dtype='float64')
+    mol_data = pd.DataFrame(0, columns=mol_features, index=results.keys(), dtype='float64')
     
     # Fill dataframe
     for i in tqdm(results.keys()):
+        
         # It is late, I lost my creativity for variable names
         tmp_tab = results[i][results[i]['fdr'] <= fdr_cutoff]
         
@@ -200,9 +201,16 @@ def make_molecule_anndata(results, mdt, fdr_cutoff=0.5, only_onSample=False):
 
         ttt = tmp_tab.reset_index()[['formula', 'intensity']]
         ttt2 = ttt.groupby('formula').sum()
+        
+        #if i =='2022-12-15_15h53m33s':
+        #    print(ttt2.index)
+        #    print(mol_data.loc[i, ttt2.index])
 
         mol_data.loc[i, ttt2.index] = ttt2['intensity'].values
         
+        #if i =='2022-12-15_15h53m33s':
+        #    print(mol_data.loc[i, ttt2.index])
+    #print(mol_data.loc[i, 'C62H120O17P2'])        
     return AnnData(X=mol_data.to_numpy(), var=pd.DataFrame(mol_features), obs=mdt.loc[mol_data.index, :])
 
 
