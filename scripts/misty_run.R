@@ -12,20 +12,18 @@ library(ggplot2)
 plan(multisession, workers=2)
 #plan(sequential)
 
-data_folder = '/scratch/trose/pos_lip_formisty/'
-results_folder = '/scratch/trose/pos_lip_misty_results'
+args <- commandArgs(trailingOnly = TRUE)
+
+data_file = args[1]
+results_folder = args[2]
 
 
-files = list.files(data_folder)
+print(data_file)
+df = read.csv(data_file)
+name = tail(str_split(str_split(data_file, '\\.')[[1]][1],'/')[[1]], n=1)
 
-for (file in files){
-    print(file)
-    df = read.csv(paste0(data_folder, file))
-    name = str_split(file, '\\.')[[1]][1]
-    
-    sample.expr <- df %>% select(-c(row, col, X))
-    sample.pos <- df %>% select(row, col)
+sample.expr <- df %>% select(-c(row, col, X))
+sample.pos <- df %>% select(row, col)
 
-    create_initial_view(sample.expr) %>% add_paraview(sample.pos, l = 250) %>%
-    run_misty(results.folder = paste0(results_folder, .Platform$file.sep, name), cached = FALSE, append = FALSE)
-}
+create_initial_view(sample.expr) %>% add_paraview(sample.pos, l = 250) %>%
+run_misty(results.folder = paste0(results_folder, .Platform$file.sep, name), cached = FALSE, append = FALSE)
