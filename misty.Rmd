@@ -29,58 +29,217 @@ plan(sequential)
 
 # Load data
 ```{r}
-data("synthetic")
-
-ggplot(synthetic[[1]], aes(x = col, y = row, color = type)) +
-  geom_point(shape = 15, size = 0.7) +
-  scale_color_manual(values = c("#e9eed3", "#dcc38d", "#c9e2ad", "#a6bab6")) +
-  theme_void()
+base_path = '/scratch/trose/misty/results'
+files = list.files(base_path)
+misty_results <- lapply(X=files, 
+                        FUN=function(file, path){return(collect_results(file.path(path, file)))}, 
+                        path=base_path)
 ```
 
-# Create views
 
-## Intra
+
 ```{r}
-expr <- synthetic[[1]] %>% select(-c(row, col, type, starts_with("lig")))
+plot_view_contributions2 <- function(misty.results, trim = -Inf,
+                                    trim.measure = c(
+                                      "gain.R2", "multi.R2", "intra.R2",
+                                      "gain.RMSE", "multi.RMSE", "intra.RMSE"
+                                    )) {
+  trim.measure.type <- match.arg(trim.measure)
 
-misty.intra <- create_initial_view(expr)
+  assertthat::assert_that(("contributions.stats" %in% names(misty.results)),
+    msg = "The provided result list is malformed. Consider using collect_results()."
+  )
 
-summary(misty.intra)
+  assertthat::assert_that(("improvements.stats" %in% names(misty.results)),
+    msg = "The provided result list is malformed. Consider using collect_results()."
+  )
+
+  inv <- sign((stringr::str_detect(trim.measure.type, "gain") |
+    stringr::str_detect(trim.measure.type, "RMSE", negate = TRUE)) - 0.5)
+
+ targets <- misty.results$improvements.stats %>%
+    dplyr::filter(
+      measure == trim.measure.type,
+      inv * mean >= inv * trim
+    ) %>%
+    dplyr::pull(target)
+ 
+ plot.data <- misty.results$contributions.stats %>%
+    dplyr::filter(target %in% targets)
+ 
+ return(plot.data)
+}
+
+lapply(X=misty_results, FUN=plot_view_contributions2) %>% 
+  bind_rows() %>%
+  select(target, view, fraction) %>%
+  filter(view=='intra') %>%
+  group_by(target) %>%
+  summarize(mean=mean(fraction), sd=sd(fraction), cnt = n()) %>%
+  filter(!is.na(sd) & cnt > 2) %>%
+  mutate(lower=mean-sd, upper=mean+sd) %>%
+  arrange(mean) %>%
+  mutate(target=factor(target, levels=target)) %>%
+  ggplot(aes(x=target, y=mean)) +
+  geom_col()+
+  geom_errorbar(aes(ymin = lower, ymax = upper))
+  theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+
+lapply(X=misty_results, FUN=plot_view_contributions2) %>% 
+  bind_rows() %>%
+  select(target, view, fraction) %>%
+  filter(view=='para.250') %>%
+  group_by(target) %>%
+  summarize(mean=mean(fraction), sd=sd(fraction), cnt = n()) %>%
+  filter(!is.na(sd) & cnt > 2) %>%
+  mutate(lower=mean-sd, upper=mean+sd) %>%
+  arrange(mean) %>%
+  mutate(target=factor(target, levels=target)) %>%
+  ggplot(aes(x=target, y=mean)) +
+  geom_col()+
+  geom_errorbar(aes(ymin = lower, ymax = upper))
+  theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 ```
 
-## Para
+
 ```{r}
-pos <- synthetic[[1]] %>% select(row, col)
+plot_interaction_communities2 <- function(misty.results, view, cutoff = 1) {
+  assertthat::assert_that(("importances.aggregated" %in% names(misty.results)),
+    msg = "The provided result list is malformed. Consider using collect_results()."
+  )
 
-misty.views <- misty.intra %>% add_paraview(pos, l = 10)
-#> 
-#> Generating paraview
+  assertthat::assert_that((view %in%
+    (misty.results$importances.aggregated %>% dplyr::pull(view))),
+  msg = "The selected view cannot be found in the results table."
+  )
 
-summary(misty.views)
+  view.wide <- misty.results$importances.aggregated %>%
+    dplyr::filter(view == !!view) %>%
+    tidyr::pivot_wider(
+      names_from = "Target", values_from = "Importance",
+      -c(view, nsamples)
+    )
+
+
+  assertthat::assert_that(
+    all((view.wide %>%
+      dplyr::select(-Predictor) %>% colnames() %>% sort()) ==
+      (view.wide %>%
+        dplyr::pull(Predictor)) %>% sort()),
+    msg = "The predictor and target markers in the view must match."
+  )
+
+  assertthat::assert_that(requireNamespace("igraph",
+    versionCheck = list(op = ">=", version = "1.2.7"),
+    quietly = TRUE
+  ),
+  msg = "The package igraph (>= 1.2.7) is required to calculate the interaction communities."
+  )
+
+  A <- view.wide %>%
+    dplyr::select(-Predictor) %>%
+    as.matrix()
+  A[A < cutoff | is.na(A)] <- 0
+
+  # Workaround: fix binding check for variable . in this function context.
+  # The reference to . below works just fine in its own scope
+  . <- NULL
+
+  G <- igraph::graph.adjacency(A, mode = "plus", weighted = TRUE) %>%
+    igraph::set.vertex.attribute("name", value = names(igraph::V(.))) %>%
+    igraph::delete.vertices(which(igraph::degree(.) == 0))
+ 
+  return(G) 
+}
+
+g = plot_interaction_communities2(misty_results[[1]], view='intra')
+
+#attrs <- rbind(as_data_frame(g, "vertices"), as_data_frame(g1, "vertices")) %>% unique()
+#el <- rbind(as_data_frame(g), as_data_frame(g1))
 ```
-
-## Juxta
 ```{r}
-#misty.views <- misty.views %>% add_juxtaview(pos, neighbor.thr = 30)
+view='intra'
+g = lapply(X=misty_results, FUN=plot_interaction_communities2, view=view, cutoff=0)
 
-summary(misty.views)
+new_g <- bind_rows(lapply(X=g, FUN=igraph::as_data_frame)) %>%
+  group_by(from, to) %>%
+  summarize(weight=mean(weight), cnt=n()) %>%
+  ungroup() %>%
+  filter(cnt>2) %>%
+  igraph::graph_from_data_frame(directed = FALSE)
+
+
+C <- igraph::cluster_leiden(new_g)
+
+layout <- igraph::layout_with_fr(new_g)
+
+igraph::plot.igraph(new_g,
+  layout = layout, mark.groups = C, main = view, vertex.size = 4,
+  vertex.color = "black", vertex.label.dist = 1,
+  vertex.label.color = "black", vertex.label.font = 2, vertex.label.cex = 0.66
+  )
 ```
 
-# Run MISTy
+
+
 ```{r}
-misty.views %>% run_misty(results.folder = "/scratch/trose/misty_test")
+view='para.250'
+g = lapply(X=misty_results, FUN=plot_interaction_communities2, view=view, cutoff=0)
+
+new_g <- bind_rows(lapply(X=g, FUN=igraph::as_data_frame)) %>%
+  group_by(from, to) %>%
+  summarize(weight=mean(weight), cnt=n()) %>%
+  ungroup() %>%
+  filter(cnt>2) %>%
+  igraph::graph_from_data_frame(directed = FALSE)
+
+
+C <- igraph::cluster_leiden(new_g)
+
+layout <- igraph::layout_with_fr(new_g)
+
+igraph::plot.igraph(new_g,
+  layout = layout, mark.groups = C, main = view, vertex.size = 4,
+  vertex.color = "black", vertex.label.dist = 1,
+  vertex.label.color = "black", vertex.label.font = 2, vertex.label.cex = 0.66
+  )
+```
+```{r}
+new_g
 ```
 
-# Run MISTy on all datasets
+
+
 ```{r}
-result.folders <- synthetic %>% imap_chr(function(sample, name) {
-  sample.expr <- sample %>% select(-c(row, col, type, starts_with("lig")))
-  sample.pos <- sample %>% select(row, col)
-  
-  create_initial_view(sample.expr) %>% add_paraview(sample.pos, l = 10) %>%
-    run_misty(results.folder = paste0("/scratch/trose/misty_test2", .Platform$file.sep, name))
-})
+# TODO:
+# * Remove outlier
+# * Map molecule classes/names
+# * Quantify differences between stronly intra and strongly para lipids
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
