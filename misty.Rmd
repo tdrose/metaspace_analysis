@@ -24,6 +24,9 @@ library(ggplot2)
 
 #plan(multisession, workers=2)
 plan(sequential)
+
+library(rjson)
+
 ```
 
 
@@ -34,8 +37,15 @@ files = list.files(base_path)
 misty_results <- lapply(X=files, 
                         FUN=function(file, path){return(collect_results(file.path(path, file)))}, 
                         path=base_path)
+
+JsonData <- fromJSON(file="analysis_config.json")
 ```
 
+```{r}
+cluster_tab <- function(cluster){
+  return(tibble(formula=cluster$names, membership=cluster$membership))
+}
+```
 
 
 ```{r}
@@ -80,9 +90,10 @@ lapply(X=misty_results, FUN=plot_view_contributions2) %>%
   mutate(lower=mean-sd, upper=mean+sd) %>%
   arrange(mean) %>%
   mutate(target=factor(target, levels=target)) %>%
+  filter(target !='C28H33O14') %>%
   ggplot(aes(x=target, y=mean)) +
   geom_col()+
-  geom_errorbar(aes(ymin = lower, ymax = upper))
+  geom_errorbar(aes(ymin = lower, ymax = upper))+
   theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 
 lapply(X=misty_results, FUN=plot_view_contributions2) %>% 
@@ -95,9 +106,10 @@ lapply(X=misty_results, FUN=plot_view_contributions2) %>%
   mutate(lower=mean-sd, upper=mean+sd) %>%
   arrange(mean) %>%
   mutate(target=factor(target, levels=target)) %>%
+  filter(target !='C28H33O14') %>%
   ggplot(aes(x=target, y=mean)) +
   geom_col()+
-  geom_errorbar(aes(ymin = lower, ymax = upper))
+  geom_errorbar(aes(ymin = lower, ymax = upper))+
   theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 ```
 
@@ -152,8 +164,6 @@ plot_interaction_communities2 <- function(misty.results, view, cutoff = 1) {
   return(G) 
 }
 
-g = plot_interaction_communities2(misty_results[[1]], view='intra')
-
 #attrs <- rbind(as_data_frame(g, "vertices"), as_data_frame(g1, "vertices")) %>% unique()
 #el <- rbind(as_data_frame(g), as_data_frame(g1))
 ```
@@ -166,12 +176,17 @@ new_g <- bind_rows(lapply(X=g, FUN=igraph::as_data_frame)) %>%
   summarize(weight=mean(weight), cnt=n()) %>%
   ungroup() %>%
   filter(cnt>2) %>%
-  igraph::graph_from_data_frame(directed = FALSE)
+  filter(weight>2) %>%
+  filter(from !='C28H33O14') %>%
+  filter(to !='C28H33O14') %>%
+  igraph::graph_from_data_frame(directed = FALSE) %>%
+  igraph::delete.vertices(which(igraph::degree(.) == 0))
 
 
 C <- igraph::cluster_leiden(new_g)
+cluster_tab(C) %>% write_csv(file=file.path(JsonData$store_dir, 'misty_intra_clusters.csv'))
 
-layout <- igraph::layout_with_fr(new_g)
+layout <- igraph::layout_with_kk(new_g)
 
 igraph::plot.igraph(new_g,
   layout = layout, mark.groups = C, main = view, vertex.size = 4,
@@ -191,10 +206,15 @@ new_g <- bind_rows(lapply(X=g, FUN=igraph::as_data_frame)) %>%
   summarize(weight=mean(weight), cnt=n()) %>%
   ungroup() %>%
   filter(cnt>2) %>%
-  igraph::graph_from_data_frame(directed = FALSE)
+  filter(weight>2) %>%
+  filter(from !='C28H33O14') %>%
+  filter(to !='C28H33O14') %>%
+  igraph::graph_from_data_frame(directed = FALSE) %>%
+  igraph::delete.vertices(which(igraph::degree(.) == 0))
 
 
 C <- igraph::cluster_leiden(new_g)
+cluster_tab(C) %>% write_csv(file=file.path(JsonData$store_dir, 'misty_para_clusters.csv'))
 
 layout <- igraph::layout_with_fr(new_g)
 
@@ -205,15 +225,46 @@ igraph::plot.igraph(new_g,
   )
 ```
 ```{r}
-new_g
+bind_rows(lapply(X=misty_results, FUN=function(x){return(x$importances.aggregated)})) %>%
+  dplyr::filter(view == 'para.250') %>%
+  filter(Target=='C39H79N2O6P') %>%
+  filter(!is.na(Importance)) %>%
+  group_by(Predictor, Target) %>%
+  summarize(im=mean(Importance), isd=sd(Importance), cnt=n())%>%
+  filter(cnt>2)%>%
+  mutate(Importance=im) %>%
+  mutate(lower=Importance-isd, upper=Importance+isd) %>%
+  filter(Predictor !='C28H33O14') %>%
+  arrange(desc(Importance)) %>%
+  ungroup() %>%
+  mutate(Predictor=factor(Predictor, levels=Predictor)) %>%
+  ggplot(aes(x=Predictor, y=Importance)) +
+  geom_col()+
+  geom_errorbar(aes(ymin = lower, ymax = upper))+
+  theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 ```
 
-
+```{r}
+bind_rows(lapply(X=misty_results, FUN=function(x){return(x$importances.aggregated)})) %>%
+  dplyr::filter(view == 'intra') %>%
+  filter(Target=='C39H79N2O6P') %>%
+  filter(!is.na(Importance)) %>%
+  group_by(Predictor, Target) %>%
+  summarize(im=mean(Importance), isd=sd(Importance), cnt=n())%>%
+  filter(cnt>2)%>%
+  mutate(Importance=im) %>%
+  mutate(lower=Importance-isd, upper=Importance+isd) %>%
+  filter(Predictor !='C28H33O14') %>%
+  arrange(desc(Importance)) %>%
+  ungroup() %>%
+  mutate(Predictor=factor(Predictor, levels=Predictor)) %>%
+  ggplot(aes(x=Predictor, y=Importance)) +
+  geom_col()+
+  geom_errorbar(aes(ymin = lower, ymax = upper))+
+  theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+```
 
 ```{r}
-# TODO:
-# * Remove outlier
-# * Map molecule classes/names
 # * Quantify differences between stronly intra and strongly para lipids
 ```
 
