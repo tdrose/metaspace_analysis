@@ -715,6 +715,19 @@ def get_ad_molecule_matrices(adata):
     # print(molecule_matrix.shape)
     return {'molecule_list': molecule_list, 'molecule_images': molecule_matrix}
 
+def molecule_adata(adata, mdt):
+    molecule_df = pd.DataFrame(adata.X.transpose()).assign(formula=adata.var['formula'].reset_index(drop=True)).groupby('formula').sum().reset_index()
+    ad= AnnData(
+        X=np.array(molecule_df.drop(columns=['formula'])).transpose(), 
+       obs=adata.obs.assign(
+           organism=mdt.loc[adata.uns['metaspace_id'], :]['Organism'],
+           organ=mdt.loc[adata.uns['metaspace_id'], :]['Organism_Part'],
+           ds=adata.uns['metaspace_id']),
+       var=molecule_df[['formula']]
+                  )
+    sc.pp.filter_genes(ad, min_cells=100)
+    return ad[~((ad.X==0).all(axis=1)), :]
+
 
 def tissue_mol_mat(adata_dict):
     return {key: get_ad_molecule_matrices(val) for key, val in adata_dict.items()}

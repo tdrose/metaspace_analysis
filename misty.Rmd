@@ -94,6 +94,8 @@ lapply(X=misty_results, FUN=plot_view_contributions2) %>%
   ggplot(aes(x=target, y=mean)) +
   geom_col()+
   geom_errorbar(aes(ymin = lower, ymax = upper))+
+  ggtitle('Intra view')+
+  xlab('Mean Importance')+
   theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 
 lapply(X=misty_results, FUN=plot_view_contributions2) %>% 
@@ -110,6 +112,8 @@ lapply(X=misty_results, FUN=plot_view_contributions2) %>%
   ggplot(aes(x=target, y=mean)) +
   geom_col()+
   geom_errorbar(aes(ymin = lower, ymax = upper))+
+  ggtitle('Para view')+
+  xlab('Mean Importance')+
   theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 ```
 
@@ -225,9 +229,11 @@ igraph::plot.igraph(new_g,
   )
 ```
 ```{r}
+# C41H83N2O6P
+# C39H79N2O6P
 bind_rows(lapply(X=misty_results, FUN=function(x){return(x$importances.aggregated)})) %>%
   dplyr::filter(view == 'para.250') %>%
-  filter(Target=='C39H79N2O6P') %>%
+  filter(Target=='C41H83N2O6P') %>%
   filter(!is.na(Importance)) %>%
   group_by(Predictor, Target) %>%
   summarize(im=mean(Importance), isd=sd(Importance), cnt=n())%>%
@@ -243,11 +249,31 @@ bind_rows(lapply(X=misty_results, FUN=function(x){return(x$importances.aggregate
   geom_errorbar(aes(ymin = lower, ymax = upper))+
   theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 ```
+
+```{r}
+bind_rows(lapply(X=misty_results, FUN=function(x){return(x$importances.aggregated)})) %>%
+  dplyr::filter(view == 'para.250') %>%
+  filter(Target=='C41H83N2O6P') %>%
+  filter(!is.na(Importance)) %>%
+  group_by(Predictor, Target) %>%
+  summarize(im=mean(Importance), isd=sd(Importance), cnt=n())%>%
+  filter(cnt>2)%>%
+  mutate(Importance=im) %>%
+  mutate(lower=Importance-isd, upper=Importance+isd) %>%
+  filter(Predictor !='C28H33O14') %>%
+  arrange(desc(Importance)) %>%
+  ungroup() %>%
+  mutate(Predictor=factor(Predictor, levels=Predictor))
+```
+
+
+
+
 
 ```{r}
 bind_rows(lapply(X=misty_results, FUN=function(x){return(x$importances.aggregated)})) %>%
   dplyr::filter(view == 'intra') %>%
-  filter(Target=='C39H79N2O6P') %>%
+  filter(Target=='C41H83N2O6P') %>%
   filter(!is.na(Importance)) %>%
   group_by(Predictor, Target) %>%
   summarize(im=mean(Importance), isd=sd(Importance), cnt=n())%>%
@@ -265,7 +291,7 @@ bind_rows(lapply(X=misty_results, FUN=function(x){return(x$importances.aggregate
 ```
 
 ```{r}
-# * Quantify differences between stronly intra and strongly para lipids
+misty_results[[5]] %>% plot_contrast_heatmap("intra", "para.250", cutoff = 0.5)
 ```
 
 
