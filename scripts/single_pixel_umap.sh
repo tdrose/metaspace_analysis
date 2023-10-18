@@ -10,8 +10,15 @@
 #SBATCH --mail-type=END,FAIL        # notifications for job done & fail
 #SBATCH --mail-user=tim.rose@embl.de # send-to address
 
-#module load Anaconda3
-cd /home/trose/projects/metaspace_evaluation/slurm_scripts/
-#bash conda_slurm.sh
+module load Anaconda3
+conda_path=$(which conda)
+conda_dir=$(dirname $conda_path)
+conda_parent_dir=$(dirname $conda_dir)
+conda_sh_path="$conda_parent_dir/etc/profile.d/conda.sh"
+source $conda_sh_path
+#source /g/easyqbuild/x86_64/Rocky/8/haswell/software/Anaconda3/2023.03-1/etc/profile.d/conda.sh
 conda activate metabolomics2
-python -u single_pixel_umap.py
+conda env list
+
+cd /home/trose/projects/metaspace_evaluation/scripts/
+python3 -u single_pixel_umap.py

@@ -69,7 +69,7 @@ results = pickle.load(open(os.path.join(store_dir, 'hmdb4_results_IsobarFree.pic
 dss = pickle.load(open(os.path.join(store_dir, 'all_datasets.pickle'), "rb" ) )
 
 md = utils.make_metadata_dict(dss, results, only_results=True)
-mdt = utils.clean_metadata_table(utils.metadata_dict_totable(md))
+mdt = utils.clean_metadata_table(utils.metadata_dict_totable(md), path='../metadata_mapping/')
 mdt['top_Organism'] = utils.top_feature_col(mdt['Organism'], top=6, exclusion_list=['N/A', 'cultured cells', 'Multiple'])
 mdt['top_Condition'] = utils.top_feature_col(mdt['Condition'], top=10)
 mdt['top_Organism_Part'] = utils.top_feature_col(mdt['Organism_Part'], top=10)
@@ -122,7 +122,9 @@ adc.X[np.isnan(adc.X)] = 0
 
 sc.pp.filter_cells(adc, min_genes=30)
 
-
+adc = adc[adc.obs['organism'] != 'Human', :]
+sc.pp.normalize_total(adc, target_sum=1e4)
+sc.pp.log1p(adc)
 
 sc.pp.pca(adc)
 sc.pp.neighbors(adc, metric='cosine')
