@@ -124,6 +124,8 @@ adc.X[np.isnan(adc.X)] = 0
 sc.pp.filter_cells(adc, min_genes=30)
 
 adc = adc[adc.obs['organism'] != 'Human', :]
+adc = adc[adc.obs['ds']!='2017-06-09_07h12m31s', :]
+
 sc.pp.normalize_total(adc, target_sum=1e4)
 sc.pp.log1p(adc)
 
@@ -132,6 +134,8 @@ sce.pp.harmony_integrate(adc, 'ds')
 
 sc.pp.neighbors(adc, metric='cosine', use_rep='X_pca_harmony')
 sc.tl.umap(adc)
+
+sc.tl.leiden(adc)
 pickle.dump(adc, 
             open(os.path.join(store_dir, 'brain_single_pixel_adata_harmony.pickle'), "wb"))
 
