@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J brain_spumap
+#SBATCH -J sp_bbknn
 #SBATCH -A alexandr                # group to which you belong
 #SBATCH -N 1                        # number of nodes
 #SBATCH -n 8                        # number of cores
