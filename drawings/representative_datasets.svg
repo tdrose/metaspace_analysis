@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="100.35876mm"
+   height="78.766998mm"
+   viewBox="0 0 100.35876 78.766998"
+   version="1.1"
+   id="svg64883"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="representative_datasets.svg"
+   inkscape:export-filename="representative_datasets.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview64885"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.93806818"
+     inkscape:cx="60.763174"
+     inkscape:cy="457.32283"
+     inkscape:window-width="3440"
+     inkscape:window-height="1369"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs64880">
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="RoundedArrow"
+       markerWidth="3.0309145"
+       markerHeight="2.9300001"
+       viewBox="0 0 6.1347524 5.9304951"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path1367" />
+    </marker>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-43.678337,-27.540893)">
+    <g
+       id="g3405"
+       transform="matrix(0.75576094,0,0,0.75576094,32.86303,6.6840449)"
+       inkscape:export-filename="representative_pipeline.png"
+       inkscape:export-xdpi="200"
+       inkscape:export-ydpi="200"
+       style="display:inline">
+      <g
+         id="g3568"
+         transform="translate(6.4729869,9.476316)">
+        <g
+           id="g1179">
+          <rect
+             style="fill:#1aae54;fill-opacity:1;stroke:#a4a4a4;stroke-width:0.2;stroke-linecap:round"
+             id="rect348"
+             width="60.854164"
+             height="13.229166"
+             x="7.9375"
+             y="18.520834"
+             ry="3.0550804" />
+          <text
+             xml:space="preserve"
+             style="font-size:7.05556px;line-height:2.59623px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;text-anchor:middle;fill:#93a97e;stroke:#a4a4a4;stroke-width:0.2;stroke-linecap:round"
+             x="38.123425"
+             y="24.341667"
+             id="text404"><tspan
+               sodipodi:role="line"
+               id="tspan402"
+               style="font-size:7.05556px;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.2;stroke-opacity:1"
+               x="38.123425"
+               y="24.341667">Polarity</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-size:3.88056px;line-height:2.28468px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.2;stroke-linecap:round;stroke-opacity:1"
+             x="38.27742"
+             y="29.935816"
+             id="text1122"><tspan
+               sodipodi:role="line"
+               id="tspan1120"
+               style="font-size:3.88056px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.2"
+               x="38.27742"
+               y="29.935816">Positive/Negative</tspan></text>
+        </g>
+        <g
+           id="g1191"
+           transform="translate(0,26.634736)">
+          <rect
+             style="fill:#1aae54;fill-opacity:1;stroke:#a4a4a4;stroke-width:0.2;stroke-linecap:round"
+             id="rect1181"
+             width="60.854164"
+             height="13.229166"
+             x="7.9375"
+             y="18.520834"
+             ry="3.0550804" />
+          <text
+             xml:space="preserve"
+             style="font-size:7.05556px;line-height:2.59623px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.2;stroke-linecap:round;stroke-opacity:1"
+             x="38.123425"
+             y="24.341667"
+             id="text1185"><tspan
+               sodipodi:role="line"
+               id="tspan1183"
+               style="font-size:7.05556px;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.2;stroke-opacity:1"
+               x="38.123425"
+               y="24.341667">MALDI matrix</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-size:3.88056px;line-height:2.28468px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.2;stroke-linecap:round;stroke-opacity:1"
+             x="38.27742"
+             y="29.935816"
+             id="text1189"><tspan
+               sodipodi:role="line"
+               id="tspan1187"
+               style="font-size:3.88056px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.2"
+               x="38.27742"
+               y="29.935816">DHB, DAN, 9AA, ...</tspan></text>
+        </g>
+        <g
+           id="g1205"
+           transform="translate(0,53.269473)">
+          <rect
+             style="fill:#1aae54;fill-opacity:1;stroke:#a4a4a4;stroke-width:0.2;stroke-linecap:round"
+             id="rect1195"
+             width="60.854164"
+             height="13.229166"
+             x="7.9375"
+             y="18.520834"
+             ry="3.0550804" />
+          <text
+             xml:space="preserve"
+             style="font-size:7.05556px;line-height:2.59623px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.2;stroke-linecap:round;stroke-opacity:1"
+             x="38.123425"
+             y="24.341667"
+             id="text1199"><tspan
+               sodipodi:role="line"
+               id="tspan1197"
+               style="font-size:7.05556px;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.2;stroke-opacity:1"
+               x="38.123425"
+               y="24.341667">mz-range</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-size:3.88056px;line-height:2.28468px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.2;stroke-linecap:round;stroke-opacity:1"
+             x="38.27742"
+             y="29.935816"
+             id="text1203"><tspan
+               sodipodi:role="line"
+               id="tspan1201"
+               style="font-size:3.88056px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.2"
+               x="38.27742"
+               y="29.935816">Metabolites/Lipids</tspan></text>
+        </g>
+        <g
+           id="g1217"
+           transform="translate(0,79.904209)">
+          <rect
+             style="fill:#1aae54;fill-opacity:1;stroke:#a4a4a4;stroke-width:0.2;stroke-linecap:round"
+             id="rect1207"
+             width="60.854164"
+             height="13.229166"
+             x="7.9375"
+             y="18.520834"
+             ry="3.0550804" />
+          <text
+             xml:space="preserve"
+             style="font-size:7.05556px;line-height:2.59623px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;text-anchor:middle;fill:#93a97e;stroke:#a4a4a4;stroke-width:0.2;stroke-linecap:round"
+             x="38.123425"
+             y="24.341667"
+             id="text1211"><tspan
+               sodipodi:role="line"
+               id="tspan1209"
+               style="font-size:7.05556px;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.2;stroke-opacity:1"
+               x="38.123425"
+               y="24.341667">Tissue</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-size:3.88056px;line-height:2.28468px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.2;stroke-linecap:round;stroke-opacity:1"
+             x="38.27742"
+             y="29.935816"
+             id="text1215"><tspan
+               sodipodi:role="line"
+               id="tspan1213"
+               style="font-size:3.88056px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.2"
+               x="38.27742"
+               y="29.935816">Brain, Liver, Kidney, ...</tspan></text>
+        </g>
+        <path
+           style="fill:#000000;fill-opacity:1;stroke:#404040;stroke-width:0.8;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+           d="m 38.364582,33.748341 v 7.9375"
+           id="path1273" />
+        <path
+           style="fill:#000000;fill-opacity:1;stroke:#404040;stroke-width:0.8;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+           d="m 38.364582,60.383077 v 7.9375"
+           id="path1668" />
+        <path
+           style="fill:#000000;fill-opacity:1;stroke:#404040;stroke-width:0.8;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+           d="m 38.364582,87.017814 v 7.9375"
+           id="path1674" />
+        <rect
+           style="fill:#d0debb;fill-opacity:1;stroke:#000000;stroke-width:0.799999;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect1997"
+           width="66.145836"
+           height="92.604164"
+           x="74.083336"
+           y="18.520834"
+           ry="3.0550804" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#404040;stroke-width:0.8;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+           d="m 38.364582,114.0054 v 7.93754 l 64.822918,-0.23461 v -7.9375"
+           id="path2261" />
+        <g
+           id="g3057">
+          <rect
+             style="fill:#d0d0ce;fill-opacity:1;stroke:none;stroke-width:0.799999;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+             id="rect2374"
+             width="55.5625"
+             height="15.875"
+             x="79.375"
+             y="21.166666"
+             ry="3.0550804" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.5861px;line-height:4.15396px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans Bold';text-align:center;text-anchor:middle;fill:#9197ba;fill-opacity:1;stroke:none;stroke-width:0.799999;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+             x="107.05436"
+             y="30.813877"
+             id="text3002"><tspan
+               sodipodi:role="line"
+               id="tspan3000"
+               style="fill:#000000;fill-opacity:1;stroke-width:0.8"
+               x="107.05436"
+               y="30.813877">Most common ions</tspan></text>
+        </g>
+        <g
+           id="g3065"
+           transform="translate(0,35.454185)">
+          <rect
+             style="fill:#d0d0ce;fill-opacity:1;stroke:none;stroke-width:0.799999;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+             id="rect3059"
+             width="55.5625"
+             height="15.875"
+             x="79.375"
+             y="21.166666"
+             ry="3.0550804" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.5861px;line-height:5.31091px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans Bold';text-align:center;text-anchor:middle;fill:#9197ba;fill-opacity:1;stroke:none;stroke-width:0.799999;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+             x="107.74407"
+             y="28.158422"
+             id="text3063"><tspan
+               sodipodi:role="line"
+               id="tspan3061"
+               style="fill:#000000;fill-opacity:1;stroke-width:0.8"
+               x="107.74407"
+               y="28.158422">Datasets with most </tspan><tspan
+               sodipodi:role="line"
+               style="fill:#000000;fill-opacity:1;stroke-width:0.8"
+               x="107.74407"
+               y="33.469334"
+               id="tspan3067">common ions</tspan></text>
+        </g>
+        <g
+           id="g3203">
+          <rect
+             style="fill:#707372;fill-opacity:1;stroke:none;stroke-width:0.799999;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+             id="rect3071"
+             width="55.5625"
+             height="15.875"
+             x="79.375"
+             y="92.075035"
+             ry="3.0550804" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.5861px;line-height:5.31091px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans Bold';text-align:center;text-anchor:middle;fill:#9197ba;fill-opacity:1;stroke:none;stroke-width:0.799999;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+             x="107.0566"
+             y="99.066788"
+             id="text3075"><tspan
+               sodipodi:role="line"
+               id="tspan3073"
+               style="fill:#ffffff;fill-opacity:1;stroke-width:0.8"
+               x="107.0566"
+               y="99.066788">Representative</tspan><tspan
+               sodipodi:role="line"
+               style="fill:#ffffff;fill-opacity:1;stroke-width:0.8"
+               x="107.0566"
+               y="104.3777"
+               id="tspan3079">Datasets</tspan></text>
+        </g>
+        <g
+           id="g3218"
+           transform="translate(0,0.9701341)">
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.5861px;line-height:4.15396px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans Bold';text-align:center;text-anchor:middle;fill:#ba91b7;fill-opacity:1;stroke:none;stroke-width:0.799999;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+             x="116.4053"
+             y="47.086025"
+             id="text3135"><tspan
+               sodipodi:role="line"
+               id="tspan3133"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke-width:0.8"
+               x="116.4053"
+               y="47.086025">Top 10%</tspan></text>
+          <path
+             style="fill:#000000;fill-opacity:1;stroke:#404040;stroke-width:0.8;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+             d="m 100.27712,39.56918 v 11.1125"
+             id="path3189"
+             sodipodi:nodetypes="cc" />
+        </g>
+        <g
+           id="g3226"
+           transform="translate(0,36.424319)">
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.5861px;line-height:4.15396px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans Bold';text-align:center;text-anchor:middle;fill:#ba91b7;fill-opacity:1;stroke:none;stroke-width:0.799999;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+             x="116.4053"
+             y="47.086025"
+             id="text3222"><tspan
+               sodipodi:role="line"
+               id="tspan3220"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke-width:0.8"
+               x="116.4053"
+               y="47.086025">Top 20%</tspan></text>
+          <path
+             style="fill:#000000;fill-opacity:1;stroke:#404040;stroke-width:0.8;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+             d="m 100.27712,39.56918 v 11.1125"
+             id="path3224"
+             sodipodi:nodetypes="cc" />
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
