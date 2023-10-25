@@ -26,6 +26,15 @@ import multiprocessing as mp
 import utils
 from config import store_dir, data_dir, date_key, enrichment_dir
 
+# Plotting parameters
+XXSMALL_SIZE = 5
+XSMALL_SIZE = 6
+SMALLSMALL_SIZE = 8
+SMALL_SIZE = 10
+MEDIUM_SIZE = 12
+BIGGER_SIZE = 18
+cm = 1/2.54
+
 
 def load_tissue_datasets(ds_list: pd.Series, include_offsample: bool=False, fdr: float=0.1, path=os.path.join(store_dir, 'all_ionimages/')) -> Dict[str, AnnData]:
     out_ads = {}
