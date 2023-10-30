@@ -5,7 +5,6 @@ import random
 from typing import List, Dict, Tuple
 from anndata import AnnData, concat
 import scanpy as sc
-import scanpy.external as sce
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,6 +25,7 @@ sys.path.append("..")
 import utils
 from coloc_utils import *
 from config import store_dir, data_dir, date_key, enrichment_dir, module_dir
+
 
 tissue_colocs = pickle.load(open(os.path.join(store_dir, 'pos_lip_tissue_colocs.pickle'), "rb" ))
 df = pd.concat([x['c_measures'].assign(tissue=tis) for tis, x in tissue_colocs.items()])
@@ -79,12 +79,12 @@ mdt['top_maldi_matrix'] = utils.top_feature_col(mdt['maldi_matrix'], top=8)
 mdt['top_Group'] = utils.top_feature_col(mdt['Group'], top=10, exclusion_list=['not available'])
 
 
-
+organ, setting = sys.argv[1].split('_')
 
 
 # Single pixel specific analysis
 brain_ads = {}
-for dsid, ad in tissue_ads['Brain'].items():
+for dsid, ad in tissue_ads[organ].items():
     brain_ads[dsid] = molecule_adata(ad, mdt)
     
 # molecule frequencies
@@ -123,21 +123,27 @@ adc.X[np.isnan(adc.X)] = 0
 
 sc.pp.filter_cells(adc, min_genes=30)
 
-adc = adc[adc.obs['organism'] != 'Human', :]
-adc = adc[adc.obs['ds']!='2017-06-09_07h12m31s', :]
+if organ == 'Brain':
+    adc = adc[adc.obs['organism'] != 'Human', :]
+    adc = adc[adc.obs['ds']!='2017-06-09_07h12m31s', :]
 
 sc.pp.normalize_total(adc, target_sum=1e4)
 sc.pp.log1p(adc)
-
 sc.pp.pca(adc)
-sce.pp.harmony_integrate(adc, 'ds')
 
-sc.pp.neighbors(adc, metric='cosine', use_rep='X_pca_harmony')
+if setting == 'normal':
+    sc.pp.neighbors(adc, metric='cosine')
+elif setting == 'bbknn':
+    sc.external.pp.bbknn(adc, batch_key='ds', metric='euclidean', neighbors_within_batch=3)
+else:
+    raise ValueError('setting not available')
+
 sc.tl.umap(adc)
 
 sc.tl.leiden(adc)
 pickle.dump(adc, 
-            open(os.path.join(store_dir, 'brain_single_pixel_adata_harmony.pickle'), "wb"))
+            open(os.path.join(store_dir, f'single_pixel_adata_{organ}_{setting}.pickle'), "wb"))
+
 
 
 

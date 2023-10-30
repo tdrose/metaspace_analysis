@@ -1,10 +1,11 @@
 #!/bin/bash
-#SBATCH -J brain_spumap
+#SBATCH -J sporgan
 #SBATCH -A alexandr                # group to which you belong
 #SBATCH -N 1                        # number of nodes
 #SBATCH -n 8                        # number of cores
-#SBATCH --mem 200G                    # memory pool for all cores
+#SBATCH --mem 100G                    # memory pool for all cores
 #SBATCH -t 0-30:00:00                   # runtime limit (D-HH:MM:SS)
+#SBATCH --array=1-8  # Adjust the range according to your datasets
 #SBATCH -o /scratch/trose/slurm.%j.out          # STDOUT
 #SBATCH -e /scratch/trose/slurm.%j.err          # STDERR
 #SBATCH --mail-type=END,FAIL        # notifications for job done & fail
@@ -21,4 +22,10 @@ conda activate metabolomics2
 conda env list
 
 cd /home/trose/projects/metaspace_evaluation/scripts/
-python3 -u single_pixel_umap_brain.py
+
+datasets=("Brain_normal" "Brain_bbknn" "Kidney_normal" "Kidney_bbknn" "Liver_normal" "Liver_bbknn" "Lung_normal" "Lung_bbknn")
+
+# Get the dataset name for this job
+dataset_name="${datasets[$SLURM_ARRAY_TASK_ID - 1]}"
+
+python3 -u single_pixel_organ.py $dataset_name

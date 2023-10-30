@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J brain_spumap
+#SBATCH -J spcb2
 #SBATCH -A alexandr                # group to which you belong
 #SBATCH -N 1                        # number of nodes
 #SBATCH -n 8                        # number of cores
@@ -21,4 +21,4 @@ conda activate metabolomics2
 conda env list
 
 cd /home/trose/projects/metaspace_evaluation/scripts/
-python3 -u single_pixel_umap_brain_bbknn.py
+python3 -u single_pixel_umap_bbknn2.py

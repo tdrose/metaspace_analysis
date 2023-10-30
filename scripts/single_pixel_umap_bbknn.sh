@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J sp_bbknn
+#SBATCH -J spcb
 #SBATCH -A alexandr                # group to which you belong
 #SBATCH -N 1                        # number of nodes
 #SBATCH -n 8                        # number of cores

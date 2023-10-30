@@ -81,10 +81,13 @@ mdt['top_Group'] = utils.top_feature_col(mdt['Group'], top=10, exclusion_list=['
 
 
 
+# Single pixel specific analysis
 ads = {}
 for tis, add in tissue_ads.items():
-    for dsid, ad in add.items():
-        ads[dsid] = molecule_adata(ad, mdt)
+    # Exclude tissues
+    if tis not in ['Epididymis', 'Ovary']:
+        for dsid, ad in add.items():
+            ads[dsid] = molecule_adata(ad, mdt)
     
 # molecule frequencies
 molfreq=defaultdict(float)
@@ -122,7 +125,7 @@ adc.X[np.isnan(adc.X)] = 0
 
 sc.pp.filter_cells(adc, min_genes=30)
 
-adc = adc[adc.obs['organism'] != 'Human', :]
+# adc = adc[adc.obs['organism'] != 'Human', :]
 adc = adc[adc.obs['organism'] != 'Multiple', :]
 adc = adc[adc.obs['ds']!='2017-06-09_07h12m31s', :]
 
@@ -136,7 +139,7 @@ sc.tl.umap(adc)
 
 sc.tl.leiden(adc)
 pickle.dump(adc, 
-            open(os.path.join(store_dir, 'single_pixel_bbknn_adata.pickle'), "wb"))
+            open(os.path.join(store_dir, 'single_pixel_adata_combined_bbknn.pickle'), "wb"))
 
 
 

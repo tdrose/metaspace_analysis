@@ -82,24 +82,27 @@ mdt['top_Group'] = utils.top_feature_col(mdt['Group'], top=10, exclusion_list=['
 
 
 # Single pixel specific analysis
-brain_ads = {}
-for dsid, ad in tissue_ads['Brain'].items():
-    brain_ads[dsid] = molecule_adata(ad, mdt)
+ads = {}
+for tis, add in tissue_ads.items():
+    # Exclude tissues
+    if tis not in ['Epididymis', 'Ovary']:
+        for dsid, ad in add.items():
+            ads[dsid] = molecule_adata(ad, mdt)
     
 # molecule frequencies
 molfreq=defaultdict(float)
-for ad in brain_ads.values():
+for ad in ads.values():
     for mol in ad.var['formula']:
         molfreq[mol] += 1
         
         
 mol_cutoff = 0.2
-absmc = int(mol_cutoff*len(brain_ads))
+absmc = int(mol_cutoff*len(ads))
 
 featurelist = [key for key, val in molfreq.items() if val>=absmc ]
 
 dssizes = []
-for ad in brain_ads.values():
+for ad in ads.values():
     counter = 0
     for mol in ad.var['formula']:
         if mol in featurelist:
@@ -108,7 +111,7 @@ for ad in brain_ads.values():
     
 # Subset datasets
 ads_for_concat = []
-for ad in brain_ads.values():
+for ad in ads.values():
     tmp = ad.copy()
     tmp.var['formula2'] = tmp.var['formula']
     tmp.var = tmp.var.set_index('formula')
@@ -122,19 +125,21 @@ adc.X[np.isnan(adc.X)] = 0
 
 sc.pp.filter_cells(adc, min_genes=30)
 
-adc = adc[adc.obs['organism'] != 'Human', :]
+# adc = adc[adc.obs['organism'] != 'Human', :]
+adc = adc[adc.obs['organism'] != 'Multiple', :]
 adc = adc[adc.obs['ds']!='2017-06-09_07h12m31s', :]
 
 sc.pp.normalize_total(adc, target_sum=1e4)
 sc.pp.log1p(adc)
 
 sc.pp.pca(adc)
-sc.pp.neighbors(adc, metric='cosine')
+sc.external.pp.bbknn(adc, batch_key='organ', metric='euclidean', neighbors_within_batch=3)
+#sc.pp.neighbors(adc, metric='cosine')
 sc.tl.umap(adc)
 
 sc.tl.leiden(adc)
 pickle.dump(adc, 
-            open(os.path.join(store_dir, 'brain_single_pixel_adata.pickle'), "wb"))
+            open(os.path.join(store_dir, 'single_pixel_adata_combined_bbknn2.pickle'), "wb"))
 
 
 
