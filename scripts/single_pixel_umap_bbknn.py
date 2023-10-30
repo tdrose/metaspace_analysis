@@ -128,6 +128,8 @@ sc.pp.filter_cells(adc, min_genes=30)
 # adc = adc[adc.obs['organism'] != 'Human', :]
 adc = adc[adc.obs['organism'] != 'Multiple', :]
 adc = adc[adc.obs['ds']!='2017-06-09_07h12m31s', :]
+remove_ds = list(adc.obs['ds'].value_counts()[adc.obs['ds'].value_counts()<3].index)
+adc = adc[~adc.obs['ds'].isin(remove_ds)]
 
 sc.pp.normalize_total(adc, target_sum=1e4)
 sc.pp.log1p(adc)
