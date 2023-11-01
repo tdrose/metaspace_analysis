@@ -4,7 +4,7 @@
 #SBATCH -N 1                        # number of nodes
 #SBATCH -n 8                        # number of cores
 #SBATCH --mem 200G                    # memory pool for all cores
-#SBATCH -t 0-30:00:00                   # runtime limit (D-HH:MM:SS)
+#SBATCH -t 0-60:00:00                   # runtime limit (D-HH:MM:SS)
 #SBATCH -o /scratch/trose/slurm.%j.out          # STDOUT
 #SBATCH -e /scratch/trose/slurm.%j.err          # STDERR
 #SBATCH --mail-type=END,FAIL        # notifications for job done & fail
