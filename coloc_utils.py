@@ -35,6 +35,12 @@ MEDIUM_SIZE = 12
 BIGGER_SIZE = 18
 cm = 1/2.54
 
+def min_pixels(df, min_pixels = 20):
+    ds_bool = df.groupby('ds').agg('count')['x'] > min_pixels
+    
+    dsl = list(ds_bool[ds_bool].index)
+    
+    return df[df['ds'].isin(dsl)]
 
 def load_tissue_datasets(ds_list: pd.Series, include_offsample: bool=False, fdr: float=0.1, path=os.path.join(store_dir, 'all_ionimages/')) -> Dict[str, AnnData]:
     out_ads = {}
