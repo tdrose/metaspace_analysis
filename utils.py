@@ -377,7 +377,9 @@ def coloc_preprocessing_array(arr, maxy, scaling=True):
 
 def compute_subplot_arrangement(num_items):
     factors = []
-    for i in range(2, int(math.sqrt(num_items)) + 1):
+    if num_items%2 !=0:
+        num_items = num_items+1
+    for i in range(2, int(math.sqrt(num_items)) + 2):
         if num_items % i == 0:
             factors.append((i, num_items // i))
 
