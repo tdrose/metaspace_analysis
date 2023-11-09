@@ -1,0 +1,30 @@
+---
+title: "Testing seurat"
+author: "Tim Daniel Rose"
+date: "2023-11-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Libraries
+```{r}
+library(rjson)
+library(Seurat)
+library(SeuratDisk)
+
+JsonData <- fromJSON(file="analysis_config.json")
+```
+
+
+
+
+
+```{r}
+file = file.path(JsonData$store_dir, 'single_pixel_adata_Brain_normal.h5ad')
+
+Convert(file, dest = "h5seurat", overwrite = FALSE)
+```
+

@@ -96,6 +96,7 @@ lapply(X=misty_results, FUN=plot_view_contributions2) %>%
   geom_errorbar(aes(ymin = lower, ymax = upper))+
   ggtitle('Intra view')+
   xlab('Mean Importance')+
+  theme_light() +
   theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 
 lapply(X=misty_results, FUN=plot_view_contributions2) %>% 
@@ -114,6 +115,7 @@ lapply(X=misty_results, FUN=plot_view_contributions2) %>%
   geom_errorbar(aes(ymin = lower, ymax = upper))+
   ggtitle('Para view')+
   xlab('Mean Importance')+
+  theme_light() +
   theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 ```
 
@@ -233,7 +235,7 @@ igraph::plot.igraph(new_g,
 # C39H79N2O6P
 bind_rows(lapply(X=misty_results, FUN=function(x){return(x$importances.aggregated)})) %>%
   dplyr::filter(view == 'para.250') %>%
-  filter(Target=='C41H83N2O6P') %>%
+  filter(Target=='C39H79N2O6P') %>%
   filter(!is.na(Importance)) %>%
   group_by(Predictor, Target) %>%
   summarize(im=mean(Importance), isd=sd(Importance), cnt=n())%>%
@@ -247,13 +249,15 @@ bind_rows(lapply(X=misty_results, FUN=function(x){return(x$importances.aggregate
   ggplot(aes(x=Predictor, y=Importance)) +
   geom_col()+
   geom_errorbar(aes(ymin = lower, ymax = upper))+
+  theme_light() +
   theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 ```
+
 
 ```{r}
 bind_rows(lapply(X=misty_results, FUN=function(x){return(x$importances.aggregated)})) %>%
   dplyr::filter(view == 'para.250') %>%
-  filter(Target=='C41H83N2O6P') %>%
+  filter(Target=='C39H79N2O6P') %>%
   filter(!is.na(Importance)) %>%
   group_by(Predictor, Target) %>%
   summarize(im=mean(Importance), isd=sd(Importance), cnt=n())%>%
@@ -267,13 +271,10 @@ bind_rows(lapply(X=misty_results, FUN=function(x){return(x$importances.aggregate
 ```
 
 
-
-
-
 ```{r}
 bind_rows(lapply(X=misty_results, FUN=function(x){return(x$importances.aggregated)})) %>%
   dplyr::filter(view == 'intra') %>%
-  filter(Target=='C41H83N2O6P') %>%
+  filter(Target=='C39H79N2O6P') %>%
   filter(!is.na(Importance)) %>%
   group_by(Predictor, Target) %>%
   summarize(im=mean(Importance), isd=sd(Importance), cnt=n())%>%
