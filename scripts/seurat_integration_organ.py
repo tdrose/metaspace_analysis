@@ -75,7 +75,7 @@ file = sys.argv[1]
 
 adc = pickle.load(open(os.path.join(store_dir, file), "rb"))
 
-adc_seurat = process_data(adc, file=file, path=store_dir)
+adc_seurat = process_data(adc, file=file, path=store_dir, reduction='cca')
 
 pickle.dump(adc_seurat, 
-            open(os.path.join(store_dir, file.split('.')[0]+'_seurat.pickle'), "wb"))
+            open(os.path.join(store_dir, file.split('.')[0]+'cca_seurat.pickle'), "wb"))
