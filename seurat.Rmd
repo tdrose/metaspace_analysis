@@ -28,3 +28,8 @@ file = file.path(JsonData$store_dir, 'single_pixel_adata_Brain_normal.h5ad')
 Convert(file, dest = "h5seurat", overwrite = FALSE)
 ```
 
+```{r}
+file = file.path(JsonData$store_dir, 'single_pixel_adata_Brain_normal.h5seurat')
+seurat<- LoadH5Seurat(file)
+```
+
