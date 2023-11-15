@@ -894,12 +894,15 @@ def load_enrichment(template_file, tissue, ontologies, lion_terms=None):
     # merge tables
     return {key: pd.concat(val) for key, val in cluster_dict.items()}
 
-def plot_enrichment(tab, cluster, max_elem, ax=None, axisfont=5, textfont=4):
+def plot_enrichment(tab, cluster, max_elem, ax=None, axisfont=5, textfont=4, color='ontology'):
     tab2 = tab.sort_values('ES_median')
     tab2['-log10(q-value)'] = -np.log10(tab2['q.value_median'])
     if ax is None:
         fig, ax = plt.subplots(1)
-    sns.barplot(data=tab2, x='ES_median', y='term', hue='ontology', dodge=False, ax=ax, width=.5)
+    if color in tab2.columns:
+        sns.barplot(data=tab2, x='ES_median', y='term', hue=color, dodge=False, ax=ax, width=.5)
+    else:
+        sns.barplot(data=tab2, x='ES_median', y='term', color=color, dodge=False, ax=ax, width=.5)
     #sns.scatterplot(data=tab2, y='ES_median', x='term', hue='-log10(q-value)', size='-log10(q-value)', ax=ax, sizes=(40, 300))
     ax.set_ylim((-1, max_elem))
     ax.set_xlim((0, tab2['ES_median'].max()*2.5))
