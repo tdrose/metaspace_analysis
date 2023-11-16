@@ -900,9 +900,9 @@ def plot_enrichment(tab, cluster, max_elem, ax=None, axisfont=5, textfont=4, col
     if ax is None:
         fig, ax = plt.subplots(1)
     if color in tab2.columns:
-        sns.barplot(data=tab2, x='ES_median', y='term', hue=color, dodge=False, ax=ax, width=.5)
+        sns.barplot(data=tab2, x='ES_median', y='term', hue=color, dodge=False, ax=ax, width=.5, saturation=1)
     else:
-        sns.barplot(data=tab2, x='ES_median', y='term', color=color, dodge=False, ax=ax, width=.5)
+        sns.barplot(data=tab2, x='ES_median', y='term', color=color, dodge=False, ax=ax, width=.5, saturation=1)
     #sns.scatterplot(data=tab2, y='ES_median', x='term', hue='-log10(q-value)', size='-log10(q-value)', ax=ax, sizes=(40, 300))
     ax.set_ylim((-1, max_elem))
     ax.set_xlim((0, tab2['ES_median'].max()*2.5))

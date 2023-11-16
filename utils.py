@@ -348,7 +348,10 @@ def coloc_preprocessing(adata, scaling=True):
         conv = adata.X
     
     tmp = conv.transpose()
-    tmp = tmp.reshape((tmp.shape[0], adata.obs['y'].max()+1, -1))
+    if 'y' in adata.obs.columns:
+        tmp = tmp.reshape((tmp.shape[0], adata.obs['y'].max()+1, -1))
+    else:
+        tmp = tmp.reshape((tmp.shape[0], adata.obs['ion_image_pixel_y'].max()+1, -1))
     tmp2 = ndimage.median_filter(tmp, size=(1,3,3))
     
     tmp3 = tmp2.reshape((tmp2.shape[0], -1))
