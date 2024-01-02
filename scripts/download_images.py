@@ -3,7 +3,7 @@ from tqdm import tqdm
 import pickle
 
 from metaspace import SMInstance
-from metaspace2anndata import dataset_to_anndata
+from metaspace_converter import dataset_to_anndata
 
 sys.path.append("..") # Adds higher directory to python modules path.
 from config import store_dir, data_dir, date_key, enrichment_dir
@@ -18,7 +18,7 @@ dss_names = list(set(nm+nl+pm+pl))
 
 
 database = ('HMDB', 'v4')
-save_path = '/scratch/trose/ds_download'
+save_path = os.path.join(store_dir, 'all_ionimages/')
 
 counter = 0
 
@@ -35,7 +35,7 @@ for dsn in dss_names:
             
                 pickle.dump(tmp_adata,
                 open(os.path.join(save_path, f'{dsn}.pickle'), "wb"))
-	    
+
             except Exception as e:
                 print(f'Error in dataset {dsn}:')
                 print(e)
