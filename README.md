@@ -24,9 +24,10 @@ To reproduce all Figures/run all analyses, python scripts and notebooks must be 
 8. Perform single pixel integration: `scripts/single_pixel_{SCENARIO}.py`
 
 9. Generate Figure 3 of the manuscript (single pixel analysis): `figure3_SinglePixel.ipynb` 
-(Note that the cluster assignment might change due to random initialization and therefore require manual selection of a new cluster).
+(Note that the cluster assignment might change due to random initialization and therefore require manual selection of a new cluster)
 
 10. Generate Figure 4 of the manuscript (colocalization analysis): `figure4_colocalization.ipynb`
+(Figure 4 requires the linex2metaspace package, which is a wrapper for the [linex2 package](https://pypi.org/project/linex2/), which will be made public soon)
 
 11. Generate Figure 5 of the manuscript (co-regulation analysis): **TODO**
 

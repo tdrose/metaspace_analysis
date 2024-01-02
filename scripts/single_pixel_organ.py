@@ -14,8 +14,6 @@ import umap
 
 from molmass import Formula
 import metaspace
-import linex2metaspace as lx2m
-import linex2 as lx2
 from scipy import stats
 
 from collections import defaultdict

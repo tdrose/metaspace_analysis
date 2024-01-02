@@ -10,8 +10,6 @@ from sklearn.metrics.pairwise import pairwise_kernels
 import matplotlib.pyplot as plt
 
 from metaspace import SMInstance
-from anndata import AnnData
-from metaspace2anndata import dataset_to_anndata
 
 sys.path.append("..") # Adds higher directory to python modules path.
 from config import store_dir, data_dir, date_key, enrichment_dir
