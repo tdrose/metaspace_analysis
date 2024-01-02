@@ -16,8 +16,12 @@ from metaspace2anndata import dataset_to_anndata
 sys.path.append("..") # Adds higher directory to python modules path.
 from config import store_dir, data_dir, date_key, enrichment_dir
     
+sm = SMInstance()
+dss = sm.datasets()
 
-dss = pickle.load(open(os.path.join(store_dir, 'all_datasets.pickle'), "rb" ) )
+pickle.dump(dss, 
+            open( os.path.join(store_dir, 'all_datasets.pickle'), "wb" ) )
+
 
 database = ('HMDB', 'v4')
 filename = 'hmdb4_results.pickle'
@@ -43,7 +47,7 @@ for ds in dss:
             # Save intermediate results    
             if (counter % 100) == 0:
                 pickle.dump(all_results_dict, 
-            open( os.path.join('/scratch/trose/tmp', filename + '_' + str(counter)), "wb" ) )
+            open( os.path.join('/scratch/metaspace_tmp', filename + '_' + str(counter)), "wb" ) )
                 
 pickle.dump(all_results_dict, 
             open( os.path.join(store_dir, filename), "wb" ) )
