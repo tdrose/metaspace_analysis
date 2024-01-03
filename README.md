@@ -1,6 +1,6 @@
-# METASPACE evaluation
+# METASPACE knowledge base analysis
 
-Scripts for all analyses of the METASPACE knowledge base and to reproduce the Figures of the manuscript:
+Scripts for all analyses of the METASPACE knowledge to reproduce the Figures of the manuscript:
 [Rose et al. "METASPACE: A community-populated knowledge base for spatial metabolomics"](https://doi.org/10.1101/539478)
 
 ## Running all analyses
@@ -39,4 +39,4 @@ To reproduce all Figures/run all analyses, python scripts and notebooks must be 
 Since this table contains IDs of private METASPACE datasets, we cannot make it public.
 The code can be commented out to plot only public datasets.
 
-* Results for the publication have been performed on datasets uploaded prior to 02.01.23. 
+* Results for the publication have been performed on datasets uploaded before 01.02.23. 
