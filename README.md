@@ -23,7 +23,7 @@ To reproduce all Figures/run all analyses, python scripts and notebooks must be 
 
 8. Perform single pixel integration: `scripts/single_pixel_{SCENARIO}.py`
 
-9. Generate Figure 3 of the manuscript (single pixel analysis): `figure3_SinglePixel.ipynb` 
+9. Generate Figure 3 of the manuscript (single-pixel analysis): `figure3_SinglePixel.ipynb` 
 (Note that the cluster assignment might change due to random initialization and therefore require manual selection of a new cluster)
 
 10. Generate Figure 4 of the manuscript (colocalization analysis): `figure4_colocalization.ipynb`
@@ -33,10 +33,10 @@ To reproduce all Figures/run all analyses, python scripts and notebooks must be 
 
 
 ## Additional notes:
-* `scripts/*.py` files usually take a longer time to run and can therefore might be submitted to a suitable cluster as jobs (`*.sh` slurm scripts are available for each file).
+* `scripts/*.py` files usually take a longer time to run and can therefore be submitted to a suitable cluster as jobs (`*.sh` slurm scripts are available for each file).
 
-* The file `figure1_stats.ipynb` requires the table `all_dataset_ids-06-09-23.csv` to create the the plot in Figure 1B showing the overview of datasets uploaded to METASPACE.
+* The file `figure1_stats.ipynb` requires the table `all_dataset_ids-06-09-23.csv` to create the plot in Figure 1B showing the overview of datasets uploaded to METASPACE.
 Since this table contains IDs of private METASPACE datasets, we cannot make it public.
-The code can be commented out to plot only the public uploaded datasets
+The code can be commented out to plot only public datasets.
 
-* Results for the publication have been performed on datasets uploaded before 02.01.23 
+* Results for the publication have been performed on datasets uploaded prior to 02.01.23. 
