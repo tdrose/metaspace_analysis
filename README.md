@@ -29,8 +29,7 @@ To reproduce all Figures/run all analyses, python scripts and notebooks must be 
 10. Generate Figure 4 of the manuscript (colocalization analysis): `figure4_colocalization.ipynb`
 (Figure 4 requires the linex2metaspace package, which is a wrapper for the [linex2 package](https://pypi.org/project/linex2/), which will be made public soon)
 
-11. Generate Figure 5 of the manuscript (co-regulation analysis): **TODO**
-
+11. Generate plots from Figure 5 of the manuscript (co-regulation analysis): Run the R-script in the directory `figure5` (Further information are included as comments in the top of the file)
 
 ## Additional notes:
 * `scripts/*.py` files usually take a longer time to run and can therefore be submitted to a suitable cluster as jobs (`*.sh` slurm scripts are available for each file).
@@ -39,4 +38,4 @@ To reproduce all Figures/run all analyses, python scripts and notebooks must be 
 Since this table contains IDs of private METASPACE datasets, we cannot make it public.
 The code can be commented out to plot only uploaded public datasets over time.
 
-* Results for the publication have been performed on datasets uploaded before 02.02.23. 
+* Results for the publication for Figures 1-4 have been performed on datasets uploaded before 02.02.23. 
