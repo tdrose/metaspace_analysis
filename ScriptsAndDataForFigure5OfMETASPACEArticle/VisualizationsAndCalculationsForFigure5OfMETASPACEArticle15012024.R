@@ -16,7 +16,7 @@
 #### Loading of packages and definition of a local convenience function
 library("reshape2")
 
-library("retistruct")
+library("retistruct") # From GitHub: Install: devtools::install_github("davidcsterratt/retistruct@v0.6.4", subdir="pkg/retistruct")
 library("beanplot")
 
 library("fmsb")
@@ -191,13 +191,13 @@ ComparisonCoregulationVsCooccurrencexx <- as.matrix(aggregate(as.numeric(MatrixO
 colnames(ComparisonCoregulationVsCooccurrencexx) <- c("co-regulation", "co-occurrence mean", "co-occurrence median", "co-occurrence sd", "co-occurrence se", "EmptyEntries", "AllEntries")
 
 # Test for how much the lipid pairs of METASPACE cover the lipid pairs of the co-regulation dataset, and how it differs over the co-regulation: only smaller fraction not covered and each time similar fraction
-pdf("C:/Users/Kevin/Documents/RData/Rest2/ACGData/FiguresByKT/ComparisonOfMETASPACECooccurrenceAndKoeberlinCoregulationDataMissingValuesFocus10052019xxboth.pdf")
+pdf("./OutputFiles/ComparisonOfMETASPACECooccurrenceAndKoeberlinCoregulationDataMissingValuesFocus10052019xxboth.pdf")
 
 plot(ComparisonCoregulationVsCooccurrencexx[, c("co-regulation", "AllEntries")], xlim = c(-1,1), type = "l", ylab = "Entries per binned co-regulation", main = "Distribution of unmapped entries (unfocused)")
 lines(ComparisonCoregulationVsCooccurrence[, c("co-regulation", "EmptyEntries")], xlim = c(-1,1), col = "Blue")
 
 lines(ComparisonCoregulationVsCooccurrencexx[, c("co-regulation", "EmptyEntries")], xlim = c(-1,1), col = "Red")
-legend("bottom", c("All lipid pairs (Köberlin data)", "Lipid pairs absent from METASPACE (lipid-like subset)", "Lipid pairs absent from METASPACE (all pairs)"), fill = c("black", "blue", "red"), border = "white", cex = 0.7)
+legend("bottom", c("All lipid pairs (K?berlin data)", "Lipid pairs absent from METASPACE (lipid-like subset)", "Lipid pairs absent from METASPACE (all pairs)"), fill = c("black", "blue", "red"), border = "white", cex = 0.7)
 
 plot(ComparisonCoregulationVsCooccurrencexx[, "co-regulation"], ComparisonCoregulationVsCooccurrencexx[, "EmptyEntries"]*100/ComparisonCoregulationVsCooccurrencexx[, "AllEntries"], xlim = c(-1,1), ylim = c(0,100), type = "l", xlab = "Co-regulation", ylab = "Ratio of unmapped entries (%)", main = "Distribution of unmapped entry ratios", col = "red")
 lines(ComparisonCoregulationVsCooccurrence[, "co-regulation"], ComparisonCoregulationVsCooccurrence[, "EmptyEntries"]*100/ComparisonCoregulationVsCooccurrence[, "AllEntries"], xlim = c(-1,1), col = "blue")
@@ -259,7 +259,7 @@ fit2 <- lm(Coregulation ~ Cooccurrence, data = METASPACEToKoeberlinMatchesDatafr
 TestCorPCCer <- cor.test(METASPACEToKoeberlinMatchesDataframe[(METASPACEToKoeberlinMatchesDataframe$SubclassFirst == "PC_aa") & (METASPACEToKoeberlinMatchesDataframe$SubclassSecond == "Cer"), "Cooccurrence"], METASPACEToKoeberlinMatchesDataframe[(METASPACEToKoeberlinMatchesDataframe$SubclassFirst == "PC_aa") & (METASPACEToKoeberlinMatchesDataframe$SubclassSecond == "Cer"),"Coregulation"],  method = "pearson", use = "complete.obs")
 
 
-QuantitativeComparisonOfSubclasses <- do.call("rbind", lapply(levels(METASPACEToKoeberlinMatchesDataframe$SubclassSecond), function(y){do.call("rbind", lapply(levels(METASPACEToKoeberlinMatchesDataframe$SubclassFirst), function(x){if(!all(is.na(METASPACEToKoeberlinMatchesDataframe[(METASPACEToKoeberlinMatchesDataframe$SubclassFirst == x) & (METASPACEToKoeberlinMatchesDataframe$SubclassSecond == y), "Cooccurrence"]))){c(x,y,
+QuantitativeComparisonOfSubclasses <- do.call("rbind", lapply(unique(METASPACEToKoeberlinMatchesDataframe$SubclassSecond), function(y){do.call("rbind", lapply(unique(METASPACEToKoeberlinMatchesDataframe$SubclassFirst), function(x){if(!all(is.na(METASPACEToKoeberlinMatchesDataframe[(METASPACEToKoeberlinMatchesDataframe$SubclassFirst == x) & (METASPACEToKoeberlinMatchesDataframe$SubclassSecond == y), "Cooccurrence"]))){c(x,y,
                                                                                                                                                                                                                                                                                                                                                                                                                                        unlist(cor.test(METASPACEToKoeberlinMatchesDataframe[(METASPACEToKoeberlinMatchesDataframe$SubclassFirst == x) & (METASPACEToKoeberlinMatchesDataframe$SubclassSecond == y), "Cooccurrence"], METASPACEToKoeberlinMatchesDataframe[(METASPACEToKoeberlinMatchesDataframe$SubclassFirst == x) & (METASPACEToKoeberlinMatchesDataframe$SubclassSecond == y),"Coregulation"],  method = "pearson", use = "complete.obs")[c("estimate", "p.value", "parameter","conf.int")]),
                                                                                                                                                                                                                                                                                                                                                                                                                                        
                                                                                                                                                                                                                                                                                                                                                                                                                                        CoregulationMean = mean(METASPACEToKoeberlinMatchesDataframe[(METASPACEToKoeberlinMatchesDataframe$SubclassFirst == x) & (METASPACEToKoeberlinMatchesDataframe$SubclassSecond == y), "Coregulation"], na.rm = TRUE),
@@ -296,7 +296,7 @@ CorelationsToMakeNetwork <- do.call("cbind", list(Corelation = QuantitativeCompa
                                                   ColNames = colnames(QuantitativeComparisonOfSubclassesBroad4)[unlist(lapply(1:ncol(QuantitativeComparisonOfSubclassesBroad4),function(x){rep(x,x)}))]))
 
 # Save the correlations to make the network
-write.table(CorelationsToMakeNetwork, file="./CorelationsToMakeNetwork28052019.csv", sep="\t", row.names = FALSE, quote = FALSE)
+write.table(CorelationsToMakeNetwork, file="./OutputFiles/CorelationsToMakeNetwork28052019.csv", sep="\t", row.names = FALSE, quote = FALSE)
 
 QuantitativeComparisonOfSubclassesDataframe$ClassFirst <- METASPACEToKoeberlinMatchesDataframe[match(QuantitativeComparisonOfSubclassesDataframe$V1, METASPACEToKoeberlinMatchesDataframe$SubclassFirst),"ClassFirst"]
 QuantitativeComparisonOfSubclassesDataframe$ClassSecond <- METASPACEToKoeberlinMatchesDataframe[match(QuantitativeComparisonOfSubclassesDataframe$V2, METASPACEToKoeberlinMatchesDataframe$SubclassSecond),"ClassSecond"]
@@ -331,8 +331,8 @@ MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached <- rbind(
 
 BData <- beanplot(as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,8]) ~ as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]), 
                   
-                  main = paste0("Validation METASPACE with Köberlin data (bin means)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
-                  col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (Köberlin data)",
+                  main = paste0("Validation METASPACE with K?berlin data (bin means)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
+                  col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (K?berlin data)",
                   
                   axes=F,
                   horizontal = TRUE,
@@ -352,8 +352,8 @@ axis(1, cex.lab = 0.64, cex.axis = 0.64)
 
 BData <- beanplot(as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,8]) ~ as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]), 
                   
-                  main = paste0("Validation METASPACE with Köberlin data (bin means)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
-                  col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (Köberlin data)",
+                  main = paste0("Validation METASPACE with K?berlin data (bin means)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
+                  col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (K?berlin data)",
                   
                   axes=F,
                   horizontal = TRUE,
@@ -382,7 +382,7 @@ colnames(MeanCooccurenceObservedVsCalculated) <- c("MeanObserved", "MeanEstimate
 sum((MeanCooccurenceObservedVsCalculated[,"MeanObserved"] - MeanCooccurenceObservedVsCalculated[,"MeanEstimated"])^2) #0.0006305962 #With X-values (also below)
 sum((MeanCooccurenceObservedVsCalculated[,"MeanObserved"] - mean(MeanCooccurenceObservedVsCalculated[,"MeanObserved"]))^2) #0.02151885 (with mean of observed Y)
 
-RSquaredOfCooccurrenceFit = 1 - (sum((MeanCooccurenceObservedVsCalculated[,"MeanObserved"] - MeanCooccurenceObservedVsCalculated[,"MeanEstimated"])^2)/sum((MeanCooccurenceObservedVsCalculated[,"MeanObserved"] - mean(MeanCooccurenceObservedVsCalculated[,"MeanObserved"]))^2))
+RSquaredOfCooccurrenceFit <- 1 - (sum((MeanCooccurenceObservedVsCalculated[,"MeanObserved"] - MeanCooccurenceObservedVsCalculated[,"MeanEstimated"])^2)/sum((MeanCooccurenceObservedVsCalculated[,"MeanObserved"] - mean(MeanCooccurenceObservedVsCalculated[,"MeanObserved"]))^2))
 cor.test(BData$stats[2:9], 2:9)
 
 
@@ -400,8 +400,8 @@ cor.test(BData$stats[2:9], 2:9)
 
 BData2 <- beanplot(as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,8]) ~ as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]), 
                    
-                   main = paste0("Validation METASPACE with Köberlin data (bin medians)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
-                   col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (Köberlin data)",
+                   main = paste0("Validation METASPACE with K?berlin data (bin medians)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
+                   col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (K?berlin data)",
                    
                    axes=F,
                    horizontal = TRUE,
@@ -421,8 +421,8 @@ axis(1, cex.lab = 0.64, cex.axis = 0.64)
 
 BData2 <- beanplot(as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,8]) ~ as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]), 
                    
-                   main = paste0("Validation METASPACE with Köberlin data (bin medians)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
-                   col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (Köberlin data)",
+                   main = paste0("Validation METASPACE with K?berlin data (bin medians)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
+                   col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (K?berlin data)",
                    
                    axes=F,
                    horizontal = TRUE,
@@ -526,8 +526,8 @@ MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached <- rbind(
 
 BData <- beanplot(as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,8]) ~ as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]), 
                   
-                  main = paste0("Validation METASPACE with Köberlin data (bin means)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
-                  col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (Köberlin data)",
+                  main = paste0("Validation METASPACE with K?berlin data (bin means)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
+                  col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (K?berlin data)",
                   
                   axes=F,
                   horizontal = TRUE,
@@ -547,8 +547,8 @@ axis(1, cex.lab = 0.64, cex.axis = 0.64)
 
 BData <- beanplot(as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,8]) ~ as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]), 
                   
-                  main = paste0("Validation METASPACE with Köberlin data (bin means)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
-                  col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (Köberlin data)",
+                  main = paste0("Validation METASPACE with K?berlin data (bin means)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
+                  col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (K?berlin data)",
                   
                   axes=F,
                   horizontal = TRUE,
@@ -574,8 +574,8 @@ points(sapply(2:length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWit
 
 BData2 <- beanplot(as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,8]) ~ as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]), 
                    
-                   main = paste0("Validation METASPACE with Köberlin data (bin medians)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
-                   col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (Köberlin data)",
+                   main = paste0("Validation METASPACE with K?berlin data (bin medians)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
+                   col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (K?berlin data)",
                    
                    axes=F,
                    horizontal = TRUE,
@@ -595,8 +595,8 @@ axis(1, cex.lab = 0.64, cex.axis = 0.64)
 
 BData2 <- beanplot(as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,8]) ~ as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]), 
                    
-                   main = paste0("Validation METASPACE with Köberlin data (bin medians)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
-                   col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (Köberlin data)",
+                   main = paste0("Validation METASPACE with K?berlin data (bin medians)(", z ,")"), side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
+                   col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached[,"NewBin"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (K?berlin data)",
                    
                    axes=F,
                    horizontal = TRUE,
@@ -706,8 +706,8 @@ MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b <- rbin
 pdf("C:/Users/Kevin/Documents/RData/Rest2/ACGData/FiguresByKT/BeanPlotsForCooccurrencesForTopCoregulationsVsAllOfThemButWithNetworkSubsectionAbove06527052019.pdf")
 BData4 <- beanplot(as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,8]) ~ as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,"NewBin2"]), 
                    
-                   main = "Validation METASPACE with Köberlin network data (>0.65)(medians)", side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
-                   col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,"NewBin2"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (Köberlin data)",
+                   main = "Validation METASPACE with K?berlin network data (>0.65)(medians)", side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
+                   col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,"NewBin2"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (K?berlin data)",
                    
                    axes=F,
                    horizontal = TRUE,
@@ -727,8 +727,8 @@ axis(1, cex.lab = 0.64, cex.axis = 0.64)
 
 BData4 <- beanplot(as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,8]) ~ as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,"NewBin2"]), 
                    
-                   main = "Validation METASPACE with Köberlin network data (>0.65)(medians)", side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
-                   col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,"NewBin2"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (Köberlin data)",
+                   main = "Validation METASPACE with K?berlin network data (>0.65)(medians)", side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
+                   col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,"NewBin2"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (K?berlin data)",
                    
                    axes=F,
                    horizontal = TRUE,
@@ -754,8 +754,8 @@ points(sapply(2:length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWit
 
 BData4_4 <- beanplot(as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,8]) ~ as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,"NewBin2"]), 
                      
-                     main = "Validation METASPACE with Köberlin network data (>0.65)(means)", side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
-                     col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,"NewBin2"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (Köberlin data)",
+                     main = "Validation METASPACE with K?berlin network data (>0.65)(means)", side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
+                     col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,"NewBin2"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (K?berlin data)",
                      
                      axes=F,
                      horizontal = TRUE,
@@ -775,8 +775,8 @@ axis(1, cex.lab = 0.64, cex.axis = 0.64)
 
 BData4_4 <- beanplot(as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,8]) ~ as.numeric(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,"NewBin2"]), 
                      
-                     main = "Validation METASPACE with Köberlin network data (>0.65)(means)", side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
-                     col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,"NewBin2"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (Köberlin data)",
+                     main = "Validation METASPACE with K?berlin network data (>0.65)(means)", side = "second", xlab="Manders' co-occurrence of METASPACE lipids", ll = 0.02, wd = 0.53,
+                     col = c("DarkGrey", as.list(rep("#50afff", length(unique(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached8b[,"NewBin2"]))-1))), method = "overplot", ylab = "Co-regulation of lipids (K?berlin data)",
                      
                      axes=F,
                      horizontal = TRUE,
@@ -835,7 +835,7 @@ write.table(MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttach
 UniqueEntries03062019DefaultNodeTable <- read.csv(file = "./InputData/MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached13bFullyUniqueEntries03062019DefaultNodeTable.csv", header = TRUE, sep = ",", as.is = TRUE)
 UniqueEntries03062019DefaultEdgeTable <- read.csv(file = "./InputData/MatrixOfKoeberlinMatchesMETASPACE8xxSubsetAboveWithGeneralDataAttached13bFullyUniqueEntries03062019DefaultEdgeTable.csv", header = TRUE, sep = ",", as.is = TRUE)
 
-#### Send chemical formulas of the lipids of Köberlin dataset for use in parts outside of R
+#### Send chemical formulas of the lipids of K?berlin dataset for use in parts outside of R
 KoeberlinNetworkChemicalFormulas <- unique(c(UniqueEntries03062019DefaultNodeTable$FromLipidChemicalFormula, UniqueEntries03062019DefaultNodeTable$ToLipidChemicalFormula))
 
 KoeberlinNetworkChemicalFormulas2 <- KoeberlinNetworkChemicalFormulas[KoeberlinNetworkChemicalFormulas != ""]
