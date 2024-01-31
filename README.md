@@ -27,7 +27,7 @@ To reproduce all Figures/run all analyses, python scripts and notebooks must be 
 (Note that the cluster assignment might change due to random initialization and therefore require manual selection of a new cluster)
 
 10. Generate Figure 4 of the manuscript (colocalization analysis): `figure4_colocalization.ipynb`
-(Figure 4 requires the linex2metaspace package, which is a wrapper for the [linex2 package](https://pypi.org/project/linex2/), which will be made public soon)
+(Figure 4 requires the [linex2metaspace](https://github.com/tdrose/lipidranking_metaspace) package, which can be installed from the github repository).
 
 11. Generate plots from Figure 5 of the manuscript (co-regulation analysis): Run the R-script in the directory `figure5` (Further information are included as comments in the top of the file)
 
