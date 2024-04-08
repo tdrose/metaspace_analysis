@@ -31,6 +31,9 @@ To reproduce all Figures/run all case studies, python scripts and notebooks must
 
 11. Generate plots from case study 4 of the manuscript (co-regulation analysis): Run the R-script in the directory `CaseStudy4` (Further information are included as comments in the top of the file)
 
+12. Create the main figure of the manuscript. This figures uses plots from all case studies: `CaseStudy2_SinglePixel.ipynb` 
+(Note that some plots are added to the pdf manually using Inkscape and therefore not added in this notebook).
+
 ## Additional notes:
 * `scripts/*.py` files usually take a longer time to run and can therefore be submitted to a suitable cluster as jobs (`*.sh` slurm scripts are available for each file).
 
