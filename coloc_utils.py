@@ -19,6 +19,7 @@ from scipy import stats
 import networkx as nx
 import time
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import seaborn as sns
 
 import multiprocessing as mp
@@ -34,6 +35,11 @@ SMALL_SIZE = 10
 MEDIUM_SIZE = 12
 BIGGER_SIZE = 18
 cm = 1/2.54
+
+def image_colorbar(ax, fig, im, size="5%", pad=0.1, shrink=0.6, location='bottom'):
+    div = make_axes_locatable(ax)
+    cax = div.append_axes(location, size=size, pad=pad)
+    cbar = fig.colorbar(im, cax=cax, shrink=0.6, location=location)
 
 def min_pixels(df, min_pixels = 20):
     ds_bool = df.groupby('ds').agg('count')['x'] > min_pixels
